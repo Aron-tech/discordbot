@@ -25,7 +25,13 @@ class extends Component {
     public function mount()
     {
         $this->guild = GuildSelector::getGuild();
-        $this->updateData();
+
+        if($this->guild->users()->where('discord_id', auth()->id())->exists())
+            $this->updateData();
+        elseif(auth()->user()->can('hasPermission', [$this->guild, \App\Enums\PermissionEnum::VIEW_ADMIN_PANEL]))
+            return to_route('admin.install');
+        else
+            return to_route('guild.selector');
     }
 
     public function updateData()

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PermissionEnum;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use Livewire\Volt\Component;
@@ -25,8 +26,8 @@ class extends Component {
     {
         $this->loadGuilds();
 
-       //if(GuildSelector::hasGuild())
-        //    GuildSelector::clearGuild();
+        if (GuildSelector::hasGuild())
+            GuildSelector::clearGuild();
     }
 
     public function loadGuilds()
@@ -42,7 +43,9 @@ class extends Component {
         })->values()->toArray();
 
         $this->user_owner_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
-            return $guild['owner'] === true && !in_array($guild['id'], $bot_guild_ids);
+            $has_manage_guild = ($guild['permissions'] & 0x20) === 0x20;
+
+            return ($guild['owner'] === true || $has_manage_guild) && !in_array($guild['id'], $bot_guild_ids);
         })->values()->toArray();
     }
 
@@ -62,13 +65,20 @@ class extends Component {
             return $this->dispatch('open-external', url: $external_url);
         }
 
+        if (!$guild->installed && auth()->user()->cannot('hasPermission', [$guild, PermissionEnum::EDIT_SETTINGS])) {
+            $this->toast()
+                ->error('Hiba!', 'A bot nincs telepítve a kiválasztott szerveren.')
+                ->send();
+            return;
+        }
+
         GuildSelector::setGuild($guild);
     }
 }; ?>
 
 <div>
-    <x-tab selected="{{__('Already joined')}}">
-        <x-tab.items tab="{{__('Already joined')}}">
+    <x-tab selected="{{__('Csatlakozott')}}">
+        <x-tab.items tab="{{__('Csatlakozott')}}">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 @foreach($bot_guilds as $guild)
                     <x-card image="https://cdn.discordapp.com/icons/{{$guild['id']}}/{{$guild['icon']}}.jpg">
@@ -81,10 +91,10 @@ class extends Component {
                             />
                         </div>
                     </x-card>
-              @endforeach
+                @endforeach
             </div>
         </x-tab.items>
-        <x-tab.items tab="{{__('Waiting for join')}}" wire:click='sendInfo()'>
+        <x-tab.items tab="{{__('Csatlakozásra vár')}}" wire:click='sendInfo()'>
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 @foreach($user_owner_guilds as $guild)
                     <x-card image="https://cdn.discordapp.com/icons/{{$guild['id']}}/{{$guild['icon']}}.jpg">
@@ -100,26 +110,10 @@ class extends Component {
                 @endforeach
             </div>
         </x-tab.items>
-        <x-tab.items tab="{{__('All servers')}}">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                @foreach($guilds as $guild)
-                    <x-card image="https://cdn.discordapp.com/icons/{{$guild['id']}}/{{$guild['icon']}}.jpg">
-                        <div class="flex justify-between">
-                            <x-h4>{{$guild['name']}}</x-h4>
-                            <x-button.circle
-                                wire:click="select({{ $guild['id'] }})"
-                                icon="arrow-long-right"
-                                loading
-                            />
-                        </div>
-                    </x-card>
-                @endforeach
-            </div>
-        </x-tab.items>
     </x-tab>
-        <div
-            x-data
-            x-init="$wire.on('open-external', e => window.open(e.url, '_blank'))"
-        ></div>
+    <div
+        x-data
+        x-init="$wire.on('open-external', e => window.open(e.url, '_blank'))"
+    ></div>
 </div>
 

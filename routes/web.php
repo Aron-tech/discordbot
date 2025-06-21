@@ -1,14 +1,13 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\WelcomeController;
 use App\Http\Middleware\ValidateGuildSelectionMiddleware;
 use App\Http\Middleware\VerifyDeveloperMiddleware;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 
 Route::get('login', [AuthController::class, 'redirect'])->name('login');
 
@@ -20,6 +19,8 @@ Route::get('/cache-clear', function () {
 })->name('cache.clear')->middleware(['auth', VerifyDeveloperMiddleware::class]);
 
 Route::middleware(['auth'])->group(function () {
+
+    Volt::route('admin/install', 'admin.settings')->name('admin.install')->middleware('check.permission:view_settings');
 
     Volt::route('duty', 'pages.duty')->name('pages.duty');
 
