@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Guild extends Model
+{
+    protected $primaryKey = 'guild_id';
+    protected $keyType = 'string';
+    public $incrementing = false;
+
+    protected $fillable = [
+        'guild_id',
+        'name',
+        'roles',
+        'installed',
+        'channels',
+        'settings',
+    ];
+
+    protected $casts = [
+        'roles' => 'json',
+        'channels' => 'json',
+        'settings' => 'json',
+    ];
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot('ic_name', 'ic_number', 'ic_tel', 'last_role_time', 'last_warn_time', 'created_at');
+    }
+
+    public function usersWithOutPivot(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class);
+    }
+
+    public function duties(): HasMany
+    {
+        return $this->hasMany(Duty::class);
+    }
+
+    public function dutiesWithTrashed(): HasMany
+    {
+        return $this->hasMany(Duty::class)->withTrashed();
+    }
+
+    public function blacklists(): HasMany
+    {
+        return $this->hasMany(Blacklist::class);
+    }
+}
