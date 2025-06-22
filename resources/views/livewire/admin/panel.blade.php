@@ -364,7 +364,7 @@ class extends Component {
             return;
         }
 
-        $guild->users()->updateExistingPivot($this->selected_user->discord_id, [
+        $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
             'ic_name' => $this->ic_name,
             'ic_number' => $this->ic_number,
             'ic_tel' => $this->ic_tel,
