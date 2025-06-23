@@ -24,7 +24,7 @@
                     <x-avatar image="{{auth()->user()->avatar}}"/>
                     <x-dropdown icon="chevron-down">
                         <x-dropdown.items @class('focus:bg-gray-200 border-b-2 border-gray-300') text="Hello, {{ auth()->user()->name }}!" />
-                        <x-dropdown.items text="{{__('Select server')}}" icon="globe-alt" href="{{route('guild.selector')}}" />
+                        <x-dropdown.items text="{{__('Szerver választó')}}" icon="globe-alt" href="{{route('guild.selector')}}" />
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown.items text="Logout" icon="arrow-left-start-on-rectangle" onclick="event.preventDefault(); this.closest('form').submit();" />

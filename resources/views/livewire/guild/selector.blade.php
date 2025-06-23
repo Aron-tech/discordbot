@@ -61,7 +61,7 @@ class extends Component {
         $guild = Guild::where('guild_id', $guild_id)->first();
 
         if (!$guild) {
-            $external_url = 'https://discord.com/oauth2/authorize?client_id=1377217826104016928&permissions=8&integration_type=0&scope=bot';
+            $external_url = 'https://discord.com/oauth2/authorize?client_id=1385928816110600302&permissions=8&integration_type=0&scope=bot';
             return $this->dispatch('open-external', url: $external_url);
         }
 
