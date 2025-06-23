@@ -35,6 +35,11 @@ class PermissionGate
                 return true;
             }
 
+            $permissions = $member_data['permissions'] ?? 0;
+            if (($permissions & (1 << 3)) !== 0) { // Administrator bit
+                return true;
+            }
+
             $user_roles = $member_data['roles'] ?? [];
 
             if (! empty(array_intersect($user_roles, $admin_roles))) {
