@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\{Layout, Title};
 use Livewire\Volt\Component;
+use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
 
 
@@ -21,6 +22,7 @@ class extends Component {
 
     use Interactions;
     use FormatsDuty;
+    use WithPagination;
 
     public ?Guild $guild = null;
 
