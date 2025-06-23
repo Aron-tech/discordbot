@@ -8,7 +8,6 @@ use App\Models\Guild;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 
 class PermissionGate
 {
@@ -29,14 +28,11 @@ class PermissionGate
                 return $guild_data['owner_id'] ?? null;
             });
 
-            Log::info("Checking permissions for user {$user->discord_id} in guild {$guild->guild_id} for permission {$permission->value}. {$owner_id}");
-
             if ($user->discord_id === $owner_id) {
                 return true;
             }
 
-            $permissions = $member_data['permissions'] ?? 0;
-            if (($permissions & (1 << 3)) !== 0) { // Administrator bit
+            if (self::hasAdministratorPermission($guild, $member_data['roles'] ?? [])) {
                 return true;
             }
 
@@ -56,5 +52,18 @@ class PermissionGate
 
             return false;
         });
+    }
+
+    protected static function hasAdministratorPermission(Guild $guild, array $user_roles): bool
+    {
+        $guild_roles = Cache::remember("guild_roles_{$guild->guild_id}", now()->addDays(7), function () use ($guild) {
+            $guild_data = getGuildData($guild->guild_id);
+
+            return collect($guild_data['roles'] ?? []);
+        });
+
+        return $guild_roles
+            ->filter(fn ($role) => in_array($role['id'], $user_roles))
+            ->some(fn ($role) => ($role['permissions'] & (1 << 3)) !== 0); // 1 << 3 == 8 (ADMINISTRATOR)
     }
 }
