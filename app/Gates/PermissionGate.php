@@ -25,7 +25,6 @@ class PermissionGate
 
             $owner_id = Cache::remember("guild_owner_{$guild->guild_id}", now()->addDays(7), function () use ($guild) {
                 $guild_data = getGuildData($guild->guild_id);
-                Log::info("Guild data for {$guild->guild_id}: ".json_encode($guild_data));
 
                 return $guild_data['owner_id'] ?? null;
             });
@@ -38,8 +37,10 @@ class PermissionGate
 
             $user_roles = $member_data['roles'] ?? [];
 
+            Log::info($member_data);
+
             if (! empty(array_intersect($user_roles, $admin_roles))) {
-                return true; // Admin has all permissions
+                return true;
             }
 
             if (! empty(array_intersect($user_roles, $mod_roles))) {
