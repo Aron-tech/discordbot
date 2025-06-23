@@ -37,8 +37,6 @@ class PermissionGate
 
             $user_roles = $member_data['roles'] ?? [];
 
-            Log::info($member_data);
-
             if (! empty(array_intersect($user_roles, $admin_roles))) {
                 return true;
             }
