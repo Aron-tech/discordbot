@@ -9,6 +9,9 @@ use Livewire\Volt\Volt;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 
+Route::view('/terms-of-service', 'term-service')->name('terms.of.service');
+Route::view('/privacy-policy', 'privacy')->name('privacy.policy');
+
 Route::get('login', [AuthController::class, 'redirect'])->name('login');
 
 Route::get('login/discord/callback', [AuthController::class, 'callback']);
