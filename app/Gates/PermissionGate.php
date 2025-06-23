@@ -15,9 +15,9 @@ class PermissionGate
     public static function register()
     {
         Gate::define('hasPermission', callback: function (User $user, Guild $guild, PermissionEnum $permission) {
-            $admin_roles = getRoleValue($guild, RoleTypeEnum::ADMIN_ROLES->value);
-            $mod_roles = getRoleValue($guild, RoleTypeEnum::MOD_ROLES->value);
-            $default_roles = getRoleValue($guild, RoleTypeEnum::DEFAULT_ROLES->value);
+            $admin_roles = getRoleValue($guild, RoleTypeEnum::ADMIN_ROLES->value) ?? [];
+            $mod_roles = getRoleValue($guild, RoleTypeEnum::MOD_ROLES->value) ?? [];
+            $default_roles = getRoleValue($guild, RoleTypeEnum::DEFAULT_ROLES->value) ?? [];
 
             $member_data = Cache::remember("member_data_{$guild->guild_id}_{$user->discord_id}", now()->addHours(2), function () use ($guild, $user) {
                 return getMemberData($guild->guild_id, $user->discord_id);
