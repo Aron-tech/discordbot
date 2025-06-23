@@ -36,7 +36,7 @@
                         <div class="ml-4">
                             <h3 class="text-lg font-medium text-green-300">Előfeltételek</h3>
                             <p class="mt-1 text-slate-300">
-                                Győződj meg róla, hogy rendelkezel <code class="bg-slate-700 px-2 py-1 rounded">Adminisztrátori</code> jogosultsággal a Discord szerveren, ahol a botot telepíteni szeretnéd.
+                                Győződj meg róla, hogy rendelkezel <code class="bg-slate-700 px-2 py-1 rounded">Tulajdonosi</code> jogosultsággal a Discord szerveren, ahol a botot telepíteni szeretnéd.
                             </p>
                         </div>
                     </div>
