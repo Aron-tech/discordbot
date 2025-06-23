@@ -83,8 +83,6 @@ class UserController
     {
         $validated = $request->validated();
 
-        // Log::info($validated);
-
         $pivot = $guild->users()->where('user_discord_id', $user->discord_id)->first()->pivot ?? null;
 
         $guild->users()->updateExistingPivot($user->discord_id, [
@@ -93,7 +91,7 @@ class UserController
             'ic_tel' => $validated['ic_tel'] ?? $pivot->ic_tel,
             'last_role_time' => $validated['last_role_time'] ?? $pivot->last_role_time,
             'last_warn_time' => $validated['last_warn_time'] ?? $pivot->last_warn_time,
-
+            'freedom_expiring' => $validated['freedom_expiring'] ?? $pivot->freedom_expiring,
         ]);
 
         return response()->json(['messsage' => 'A felhasználó információjának módosítása sikeresen megtörtént.'], 200);
