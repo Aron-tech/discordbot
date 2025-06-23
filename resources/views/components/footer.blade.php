@@ -11,7 +11,7 @@
             </div>
 
             <div class="flex items-center space-x-6 text-slate-400">
-                <a href="{{ route('privacy.policy') }}" class="hover:text-blue-400 transition-colors">Adatvédelemi tájékoztató</a>
+                <a href="{{ route('privacy.policy') }}" class="hover:text-blue-400 transition-colors {{ request()->routeIs('privacy.policy') ? 'text-blue-400' : '' }}">Adatvédelemi tájékoztató</a>
                 <a href="{{ route('terms.of.service') }}" class="hover:text-blue-400 transition-colors {{ request()->routeIs('terms.of.service') ? 'text-blue-400' : '' }}">Felhasználási feltételek</a>
                 <a href="#" class="hover:text-blue-400 transition-colors">Támogatás</a>
                 <a href="#" class="hover:text-blue-400 transition-colors">
