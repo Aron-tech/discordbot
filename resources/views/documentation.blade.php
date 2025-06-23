@@ -64,7 +64,7 @@
                     <div class="bg-yellow-900/20 border-l-4 border-yellow-400 p-4 rounded-r-lg">
                         <p class="font-medium text-yellow-200">
                             <i class="fas fa-exclamation-triangle mr-2"></i>
-                            A telepítés után javasoljuk a <code class="bg-yellow-900/50 px-2 py-1 rounded">/rolemanager</code> parancs használatát a frakció rangjainak beállításához.
+                            A discord bot <code class="bg-yellow-900/50 px-2 py-1 rounded">béta állapotban</code> elérhető. Előfordulhatnak kisebb hibák vagy hiányosságok. Kérjük, jelezd ezeket a discordon: roka2003-nak.
                         </p>
                     </div>
                 </div>
