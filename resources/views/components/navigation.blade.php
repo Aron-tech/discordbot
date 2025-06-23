@@ -12,7 +12,7 @@
 
             <div class="hidden md:flex items-center space-x-8">
                 <a href="{{route('welcome').'#features'}}" class="text-slate-300 hover:text-blue-400 transition-colors duration-300">Funkciók</a>
-                <a href="{{ isset($showHomeLink) && $showHomeLink ? '/#setup' : '#setup' }}" class="text-slate-300 hover:text-blue-400 transition-colors duration-300">Dokumentáció</a>
+                <a href="{{ route('documentation') }}" class="text-slate-300 hover:text-blue-400 transition-colors duration-300">Dokumentáció</a>
                 <a href="{{ isset($showHomeLink) && $showHomeLink ? '/#support' : '#support' }}" class="text-slate-300 hover:text-blue-400 transition-colors duration-300">Támogatás</a>
             </div>
 
