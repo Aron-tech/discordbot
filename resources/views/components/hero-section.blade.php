@@ -19,14 +19,14 @@
         </p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <a href="https://discord.com/oauth2/authorize?client_id=1377217826104016928&permissions=8&integration_type=0&scope=bot" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25">
+            <a href="https://discord.com/oauth2/authorize?client_id=1377217826104016928&permissions=8&integration_type=0&scope=bot" target="_blank" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25">
                 <i class="fab fa-discord mr-2"></i>
                 Bot hozzáadása
             </a>
-            <button class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 border border-slate-600 hover:border-slate-500">
+            <a href="{{route('documentation')}}" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 border border-slate-600 hover:border-slate-500">
                 <i class="fas fa-book mr-2"></i>
                 Dokumentáció
-            </button>
+            </a>
         </div>
 
         <!-- Stats -->
