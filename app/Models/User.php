@@ -59,6 +59,11 @@ class User extends Authenticatable
         return $this->hasMany(Duty::class);
     }
 
+    public function blacklists(): HasMany
+    {
+        return $this->hasMany(BlackList::class);
+    }
+
     public function dutiesWithTrashed(): HasMany
     {
         return $this->hasMany(Duty::class)->withTrashed();
@@ -72,11 +77,5 @@ class User extends Authenticatable
     public function totalDutyTime(Guild $guild): int
     {
         return $this->dutiesWithTrashed()->where('guild_guild_id', $guild->guild_id)->sum('value');
-    }
-
-
-    public function blacklists(): HasMany
-    {
-        return $this->hasMany(Blacklist::class);
     }
 }

@@ -78,7 +78,7 @@ class extends Component {
         ];
         $this->guild->save();
 
-        $this->dialog()->success('Sikeres művelet', 'Sikeresen módosítottad a szobák beállításait.')->send();
+        $this->toast()->success('Sikeres művelet', 'Sikeresen módosítottad a szobák beállításait.')->send();
     }
 
     public function saveRoles()
@@ -96,7 +96,7 @@ class extends Component {
         ];
         $this->guild->save();
 
-        $this->dialog()->success('Sikeres művelet', 'Sikeresen módosítottad a rangok jogosultságait.')->send();
+        $this->toast()->success('Sikeres művelet', 'Sikeresen módosítottad a rangok jogosultságait.')->send();
 
     }
 
@@ -122,7 +122,7 @@ class extends Component {
 
         try {
             $this->guild->save();
-            $this->dialog()->success('Sikeres mentés', 'A beállítások sikeresen frissítve lettek.')->send();
+            $this->toast()->success('Sikeres mentés', 'A beállítások sikeresen frissítve lettek.')->send();
         } catch (\Exception $e) {
             $this->dialog()->error('Hiba történt', 'Nem sikerült menteni a beállításokat. Próbáld újra később.')->send();
             logger()->error('Settings save error: ' . $e->getMessage());
