@@ -27,7 +27,7 @@
                         <x-dropdown.items text="{{__('Szerver választó')}}" icon="globe-alt" href="{{route('guild.selector')}}" />
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <x-dropdown.items text="Logout" icon="arrow-left-start-on-rectangle" onclick="event.preventDefault(); this.closest('form').submit();" />
+                            <x-dropdown.items text="Kijelentkezés" icon="arrow-left-start-on-rectangle" onclick="event.preventDefault(); this.closest('form').submit();" />
                         </form>
                     </x-dropdown>
                 </x-slot:right>
