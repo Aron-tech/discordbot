@@ -27,7 +27,7 @@ class DutyController extends Controller
         if ($user_pivot->last_role_time) {
             $last_role_days = (int) Carbon::parse($user_pivot->last_role_time)->diffInDays(now());
         } else {
-            $last_role_days = (int) Carbon::parse($user_pivot->created_at)->diffInDays(now());
+            $last_role_days = (int) Carbon::parse($user->created_at)->diffInDays(now());
         }
 
         return response()->json([
