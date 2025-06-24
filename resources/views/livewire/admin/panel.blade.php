@@ -126,7 +126,7 @@ class extends Component {
         }
     }
 
-    public function deleteUserDuties(DutyTypeEnum $type)
+    public function deleteUserDuties(DutyTypeEnum $type): void
     {
         $this->dialog()
             ->question('Warning!', 'Are you sure?')
@@ -135,7 +135,7 @@ class extends Component {
             ->send();
     }
 
-    public function destroyUserDuties($type)
+    public function destroyUserDuties($type): void
     {
         if (DutyTypeEnum::PERIOD->value === $type) {
 
@@ -158,7 +158,7 @@ class extends Component {
         }
     }
 
-    public function deleteDuties(DutyTypeEnum $type)
+    public function deleteDuties(DutyTypeEnum $type): void
     {
         $this->dialog()
             ->question('Warning!', 'Are you sure?')
@@ -190,7 +190,7 @@ class extends Component {
         }
     }
 
-    public function updateUserRole()
+    public function updateUserRole(): void
     {
         try {
             if (!$this->selected_user || !$this->selected_user_role) {
@@ -233,7 +233,7 @@ class extends Component {
         }
     }
 
-    public function warnUser()
+    public function warnUser(): void
     {
         try {
             if (!$this->selected_user) {
@@ -295,7 +295,7 @@ class extends Component {
         }
     }
 
-    public function deleteUserWarn()
+    public function deleteUserWarn(): void
     {
         try {
             if (!$this->selected_user) {
@@ -334,7 +334,7 @@ class extends Component {
         }
     }
 
-    public function deleteUser()
+    public function deleteUser(): void
     {
         $this->dialog()
             ->question('Figyelmeztetés!', 'Biztosan véglegesen törölni szeretnéd?')
@@ -359,7 +359,7 @@ class extends Component {
         $this->modal = false;
     }
 
-    public function updateUserIcData()
+    public function updateUserIcData(): void
     {
         if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::EDIT_USER_IC_DATA])) {
             $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod az aktuális szolgálati idők szerkesztéséhez.')->send();
@@ -375,7 +375,7 @@ class extends Component {
         $this->toast()->success('Sikeres művelet', 'Sikeresen módosítottad egy felhasználó IC adatait.')->send();
     }
 
-    public function autoReportDuty()
+    public function autoReportDuty(): void
     {
         if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::USE_AUTO_REPORT])) {
             $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod az aktuális szolgálati idők szerkesztéséhez.')->send();
@@ -387,7 +387,7 @@ class extends Component {
         $this->toast()->success('Sikeres művelet', 'A szolgálati idők ellenőrzése sikeresen megtörtént.')->send();
     }
 
-    public function openModal($user_discord_id)
+    public function openModal($user_discord_id): void
     {
         $this->selected_user = $this->guild->users()->where('user_discord_id', $user_discord_id)->first();
 
