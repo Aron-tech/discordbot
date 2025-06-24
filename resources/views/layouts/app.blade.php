@@ -43,7 +43,8 @@
                        @if(auth()->user()->can('hasPermission', [\App\Models\GuildSelector::getGuild(), \App\Enums\PermissionEnum::VIEW_ADMIN_PANEL]))
                             <x-side-bar.separator text="Admin Menü" line />
                             <x-side-bar.item text="{{__('Panel')}}" icon="computer-desktop" :route="route('admin.panel')"  :current="Route::currentRouteNamed('admin.panel')"/>
-                            <x-side-bar.item text="{{__('Duty log')}}" icon="clipboard-document-list" :route="route('admin.logs')"  :current="Route::currentRouteNamed('admin.logs')"/>
+                            <x-side-bar.item text="{{__('Szolgálatban lévők')}}" icon="clipboard-document-list" :route="route('admin.duty.active')"  :current="Route::currentRouteNamed('admin.duty.active')"/>
+                            <x-side-bar.item text="{{__('Duty log')}}" icon="archive-box" :route="route('admin.logs')"  :current="Route::currentRouteNamed('admin.logs')"/>
                             <x-side-bar.item text="{{__('Beállítások')}}" icon="cog" :route="route('admin.settings')"  :current="Route::currentRouteNamed('admin.settings')" />
                         @endif
                 </x-side-bar>

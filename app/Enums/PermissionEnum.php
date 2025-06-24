@@ -8,8 +8,9 @@ enum PermissionEnum: string
     case VIEW_YOUR_STATS = 'view_your_stats';
     case VIEW_STATS = 'view_stats';
     case VIEW_ADMIN_PANEL = 'view_admin_panel';
-    case VIEW_DUTY_LOGS = 'view_duty_logs';
 
+    case VIEW_DUTY_ACTIVE = 'view_duty_active';
+    case VIEW_DUTY_LOGS = 'view_duty_logs';
     case VIEW_SETTINGS = 'view_settings';
     case USE_AUTO_REPORT = 'use_auto_report';
     case EDIT_PERIOD_DUTY = 'edit_period_duty';
@@ -34,6 +35,8 @@ enum PermissionEnum: string
         return [
             self::VIEW_DUTY_LOGS,
             self::VIEW_ADMIN_PANEL,
+            self::VIEW_DUTY_ACTIVE,
+
             self::VIEW_STATS,
             self::VIEW_YOUR_STATS,
             self::EDIT_PERIOD_DUTY,

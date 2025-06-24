@@ -40,6 +40,8 @@ Route::middleware(['auth'])->group(function () {
 
             Volt::route('duty/logs', 'admin.logs')->name('logs')->middleware('check.permission:view_duty_logs');
 
+            Volt::route('/duty/active', 'admin.active')->name('duty.active')->middleware('check.permission:view_duty_active');
+
             Volt::route('panel', 'admin.panel')->name('panel')->middleware('check.permission:view_admin_panel');
         });
     });
