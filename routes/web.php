@@ -26,17 +26,15 @@ Route::middleware(['auth'])->group(function () {
 
     Volt::route('/guild-selector', 'guild.selector')->name('guild.selector');
 
+    Volt::route('admin/install', 'admin.settings')->name('install')->middleware('check.permission:view_settings');
+
     Route::middleware(ValidateGuildSelectionMiddleware::class)->group(function () {
-
-        Volt::route('admin/install', 'admin.settings')->name('admin.install')->middleware('check.permission:view_settings');
-
-        Volt::route('duty', 'pages.duty')->name('pages.duty');
-
 
         Volt::route('/dashboard', 'pages.dashboard')->name('dashboard');
         Volt::route('/toplist', 'pages.toplist')->name('toplist');
 
         Route::prefix('admin/')->name('admin.')->group(function () {
+
             Volt::route('settings', 'admin.settings')->name('settings')->middleware('check.permission:view_settings');
 
             Volt::route('duty/logs', 'admin.logs')->name('logs')->middleware('check.permission:view_duty_logs');
