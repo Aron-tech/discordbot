@@ -11,4 +11,6 @@ enum RoleTypeEnum: string
     case WARN_ROLES = 'warn_roles';
 
     case DUTY_ROLE = 'duty_role';
+
+    case FREEDOM_ROLE = 'freedom_role';
 }
