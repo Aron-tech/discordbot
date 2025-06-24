@@ -16,6 +16,9 @@
 <body x-bind:class="{ 'dark bg-gray-700': darkTheme, 'bg-white': !darkTheme }">
     <x-dialog />
     <x-toast />
+    @if(request()->routeIs('admin.settings') || request()->routeIs('admin.install'))
+        <x-banner color="red" text="Figyelem! A weboldalon 15 perces késleltetéssel történek meg a változások a rangok és a csatornák megjelenítésében. A mentésnél nincs." lg />
+    @endif
     <x-layout>
         <x-slot:header>
             <x-layout.header>
