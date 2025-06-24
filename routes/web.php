@@ -26,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
 
     Volt::route('/guild-selector', 'guild.selector')->name('guild.selector');
 
-    Volt::route('admin/install', 'admin.settings')->name('install')->middleware('check.permission:view_settings');
+    Volt::route('admin/install', 'admin.settings')->name('admin.install');
 
     Route::middleware(ValidateGuildSelectionMiddleware::class)->group(function () {
 
