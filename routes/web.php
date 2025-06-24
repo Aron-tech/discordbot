@@ -24,13 +24,14 @@ Route::get('/cache-clear', function () {
 
 Route::middleware(['auth'])->group(function () {
 
-    Volt::route('admin/install', 'admin.settings')->name('admin.install')->middleware('check.permission:view_settings');
-
-    Volt::route('duty', 'pages.duty')->name('pages.duty');
-
     Volt::route('/guild-selector', 'guild.selector')->name('guild.selector');
 
     Route::middleware(ValidateGuildSelectionMiddleware::class)->group(function () {
+
+        Volt::route('admin/install', 'admin.settings')->name('admin.install')->middleware('check.permission:view_settings');
+
+        Volt::route('duty', 'pages.duty')->name('pages.duty');
+
 
         Volt::route('/dashboard', 'pages.dashboard')->name('dashboard');
         Volt::route('/toplist', 'pages.toplist')->name('toplist');
