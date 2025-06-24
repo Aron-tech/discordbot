@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Guild\RoleTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Models\Guild;
 use App\Models\GuildSelector;
@@ -39,15 +40,30 @@ class extends Component {
 
     public function deleteUserDuty($duty_id): void
     {
-        if(auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::EDIT_PERIOD_DUTY])) {
+        if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::EDIT_PERIOD_DUTY])) {
             $this->toast()->error('Nincs jogosultságod a felhasználó kiléptetéséhez.')->send();
             return;
         }
 
-        if($this->guild->duties()->find($duty_id)->exists()) {
+        if ($this->guild->duties()->where('id', $duty_id)->exists()) {
             $duty = $this->guild->duties()->find($duty_id);
             $duty->forceDelete();
-            $this->toast()->success('A felhasználó sikeresen kiléptetve.')->send();
+
+            $member_data = getMemberData($this->guild->guild_id, $duty->user_discord_id);
+
+            $new_roles = $member_data['roles'];
+            $new_roles = array_filter($new_roles, function ($role) {
+                return $role !== getRoleValue($this->guild, RoleTypeEnum::DUTY_ROLE->value);
+            });
+
+            $response = changeMemberData($this->guild->guild_id, $duty->user_discord_id, $new_roles);
+
+            if ($response->successful()) {
+
+                $this->toast()->success('A felhasználó sikeresen kiléptetve.')->send();
+            } else {
+                $this->toast()->error('Hiba történt a felhasználó kiléptetése közben.')->send();
+            }
         } else {
             $this->toast()->error('A megadott duty nem található.')->send();
         }
@@ -64,9 +80,9 @@ class extends Component {
         $users = $this->guild->users()
             ->with(['duties' => function ($query) {
                 $query->whereNull('value')
-                      ->whereNull('end_time')
-                      ->latest('start_time')
-                      ->select('id', 'user_discord_id', 'start_time');
+                    ->whereNull('end_time')
+                    ->latest('start_time')
+                    ->select('id', 'user_discord_id', 'start_time');
             }])
             ->withPivot('ic_name')
             ->whereHas('duties', function ($q) {
@@ -79,8 +95,8 @@ class extends Component {
                         ->whereNull('end_time');
                 })->where(function ($q) {
                     $q->where('users.discord_id', 'like', "%{$this->search}%")
-                      ->orWhere('users.name', 'like', "%{$this->search}%")
-                      ->orWhere('guild_user.ic_name', 'like', "%{$this->search}%");
+                        ->orWhere('users.name', 'like', "%{$this->search}%")
+                        ->orWhere('guild_user.ic_name', 'like', "%{$this->search}%");
                 });
             })
             ->paginate($this->quantity);
@@ -106,11 +122,14 @@ class extends Component {
 
 <div>
     <div class="flex items-center w-1/4 mx-auto">
-        <x-stats icon="user-group" :number="$active_duties_count" wire:click="resetPage()" title="Szolgálatban lévők száma" footer="Kattints a kártyára az oldal az adatok frissítéséért." animated  />
+        <x-stats icon="user-group" :number="$active_duties_count" wire:click="resetPage()"
+                 title="Szolgálatban lévők száma" footer="Kattints a kártyára az oldal az adatok frissítéséért."
+                 animated/>
     </div>
     <x-table :$headers :$rows filter loading paginate striped :$sort :quantity="[10,20,50]">
         @interact('column_action', $row)
-            <x-button.circle color="red" icon="arrow-right-end-on-rectangle" wire:click="deleteUserDuty('{{$row['first_duty_id']}}')"/>
+        <x-button.circle color="red" icon="arrow-right-end-on-rectangle"
+                         wire:click="deleteUserDuty('{{$row['first_duty_id']}}')"/>
         @endinteract
     </x-table>
 </div>
