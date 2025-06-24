@@ -28,6 +28,7 @@ class extends Component {
     public ?array $warn_roles = [];
 
     public ?string $duty_role = null;
+    public ?string $freedom_role = null;
 
     public ?string $duty_room = null;
     public ?string $log_channel = null;
@@ -42,21 +43,27 @@ class extends Component {
 
     public ?Guild $guild;
 
-
     private function getRoles()
     {
-        $roles = getGuildData($this->guild->guild_id, 'roles');
-        return collect($roles)->map(function ($role) {
-            return [
-                'label' => $role['name'],
-                'value' => $role['id'],
-            ];
-        })->toArray();
+        $roles = cache()->remember($this->guild->guild_id . '_roles', 15, function () {
+            return getGuildData($this->guild->guild_id, 'roles');
+        });
+
+        return collect($roles)
+            ->sortBy('position')
+            ->map(function ($role) {
+                return [
+                    'label' => $role['name'],
+                    'value' => $role['id'],
+                ];
+            })->toArray();
     }
 
     private function getChannels()
     {
-        $channels = getGuildData($this->guild->guild_id, 'channels');
+        $channels = cache()->remember($this->guild->guild_id . '_channels', 15, function () {
+            return getGuildData($this->guild->guild_id, 'channels');
+        });
         return collect($channels)->map(function ($channel) {
             return [
                 'label' => $channel['name'],
@@ -93,11 +100,11 @@ class extends Component {
             RoleTypeEnum::IC_ROLES->value => $this->ic_roles,
             RoleTypeEnum::WARN_ROLES->value => $this->warn_roles,
             RoleTypeEnum::DUTY_ROLE->value => $this->duty_role,
+            RoleTypeEnum::FREEDOM_ROLE->value => $this->freedom_role,
         ];
         $this->guild->save();
 
         $this->toast()->success('Sikeres művelet', 'Sikeresen módosítottad a rangok jogosultságait.')->send();
-
     }
 
     public function saveSettings()
@@ -140,6 +147,7 @@ class extends Component {
         $this->mod_roles = getRoleValue($this->guild, RoleTypeEnum::MOD_ROLES->value);
         $this->default_roles = getRoleValue($this->guild, RoleTypeEnum::DEFAULT_ROLES->value);
         $this->duty_role = getRoleValue($this->guild, RoleTypeEnum::DUTY_ROLE->value);
+        $this->freedom_role = getRoleValue($this->guild, RoleTypeEnum::FREEDOM_ROLE->value);
         $this->ic_roles = getRoleValue($this->guild, RoleTypeEnum::IC_ROLES->value);
         $this->warn_roles = getRoleValue($this->guild, RoleTypeEnum::WARN_ROLES->value);
         $this->duty_room = getChannelValue($this->guild, ChannelTypeEnum::DUTY->value);
@@ -195,6 +203,14 @@ class extends Component {
                     text="Figyelj a sorrendre. A kijelölés sorrendjének meg kell egyeznie a warn szintek sorrenddel."/>
             </x-slot:header>
             <x-select.styled wire:model="warn_roles" :options="$this->roles" multiple searchable/>
+        </x-card>
+        <x-card>
+            <x-slot:header>
+                Szabadság rang
+                <x-tooltip
+                    text="Ezt a rangot fogja a bot rátenni arra a felhasználóra, aki szabadságot vesz ki. (Ameddig ez a rang van az illetőn nem tudja az alap parancsokat használni)"/>
+            </x-slot:header>
+            <x-select.styled wire:model="freedom_role" :options="$this->roles" searchable/>
         </x-card>
     </div>
 
