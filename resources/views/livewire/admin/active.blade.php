@@ -35,11 +35,6 @@ class extends Component {
     public function mount(): void
     {
         $this->guild = GuildSelector::getGuild();
-
-        $this->active_duties_count = $this->guild->duties()
-            ->whereNull('value')
-            ->whereNull('end_time')
-            ->count();
     }
 
     public function deleteUserDuty($duty_id): void
@@ -61,6 +56,10 @@ class extends Component {
 
     public function with(): array
     {
+        $this->active_duties_count = $this->guild->duties()
+            ->whereNull('value')
+            ->whereNull('end_time')
+            ->count();
 
         $users = $this->guild->users()
             ->with(['duties' => function ($query) {
