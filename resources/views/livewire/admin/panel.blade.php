@@ -393,8 +393,11 @@ class extends Component {
 
         $member_data = getMemberData($this->guild->guild_id, $this->selected_user->discord_id);
 
-        $matched = array_intersect($member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
-        $this->selected_user_role = reset($matched) ?: null;
+        if(isset($member_data['roles'])){
+            $matched = array_intersect($member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
+            $this->selected_user_role = reset($matched) ?: null;
+        }
+
         $this->ic_name = $this->selected_user->pivot->ic_name;
         $this->ic_number = $this->selected_user->pivot->ic_number;
         $this->ic_tel = $this->selected_user->pivot->ic_tel;
@@ -490,10 +493,12 @@ class extends Component {
                     <x-button icon="trash" color="red" wire:click="deleteUserDuties('{{DutyTypeEnum::TOTAL}}')"/>
                 </div>
             </x-card>
-            <x-card header="Rang szerkesztése" minimize>
-                <x-select.styled wire:change="updateUserRole" :options="$this->ic_roles" wire:model="selected_user_role"
-                                 searchable/>
-            </x-card>
+            @if($selected_user_role)
+                <x-card header="Rang szerkesztése" minimize>
+                    <x-select.styled wire:change="updateUserRole" :options="$this->ic_roles" wire:model="selected_user_role"
+                                     searchable/>
+                </x-card>
+            @endif
             <x-card header="IC adatok szerkesztése" minimize="mount">
                 <div class="flex flex-col lg:flex-row gap-2">
                     <x-input wire:model="ic_name" label="Név"/>
@@ -505,8 +510,10 @@ class extends Component {
                 </div>
             </x-card>
             <div class="flex flex-col lg:flex-row gap-2 justify-center">
-                <x-button wire:click="deleteUserWarn" text="Warn eltávolítása" icon="exclamation-triangle"/>
-                <x-button wire:click="warnUser" text="Figyelmeztetés" color="orange" icon="exclamation-triangle"/>
+                @if($selected_user_role)
+                    <x-button wire:click="deleteUserWarn" text="Warn eltávolítása" icon="exclamation-triangle"/>
+                    <x-button wire:click="warnUser" text="Figyelmeztetés" color="orange" icon="exclamation-triangle"/>
+                @endif
                 <x-button wire:click="deleteUser" text="Felhasználó törlése" color="red" icon="trash"/>
             </div>
         </div>
