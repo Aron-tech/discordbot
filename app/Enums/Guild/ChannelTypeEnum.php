@@ -14,11 +14,10 @@ enum ChannelTypeEnum: string
     public function getLabel(): string
     {
         return match ($this) {
-            self::DEFAULT_LOG => 'Default Log',
-            self::DUTY_LOG => 'Duty Log',
-            self::DUTY => 'Duty Channel',
-            self::ACTIVE_NUM => 'Active Duty Number Channel',
-            self::MEMBER_INFO => 'Member Info Channel',
+            self::DEFAULT_LOG => 'Alapértelmezett Log',
+            self::DUTY_LOG => 'Szolgálati Log',
+            self::DUTY => 'Szolgálati szoba',
+            self::ACTIVE_NUM => 'Szolgálatban lévők számát megjelenítő szoba',
         };
     }
 }
