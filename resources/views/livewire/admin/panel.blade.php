@@ -252,11 +252,9 @@ class extends Component {
                 throw new \Exception("Nincsenek warn rangok konfigurálva");
             }
 
-            // Felhasználó aktuális rangjai
             $member_data = getMemberData($this->guild->guild_id, $this->selected_user->discord_id);
             $current_warns = array_intersect($member_data['roles'], $warn_roles);
 
-            // Legmagasabb aktuális warn szint
             $current_max_level = 0;
             foreach ($current_warns as $role_id) {
                 $level = array_search($role_id, $warn_roles) + 1;
@@ -420,7 +418,7 @@ class extends Component {
                 ['index' => 'duties_with_trashed_sum_value', 'label' => 'Összes sz. idő'],
                 ['index' => 'in_role_days', 'label' => 'Rangon'],
                 ['index' => 'in_guild_days', 'label' => 'Frakcióban'],
-                ['index' => 'warn_status', 'label' => 'Figy. státusz', 'sortable' => false],
+                ['index' => 'status', 'label' => 'Státusz', 'sortable' => false],
                 ['index' => 'action'],
             ],
 
@@ -448,7 +446,10 @@ class extends Component {
                         'duties_with_trashed_sum_value' => $this->formatMinutesToHHMM($user->duties_with_trashed_sum_value),
                         'in_role_days' => $user->in_role_days . ' napja',
                         'in_guild_days' => $user->in_guild_days . ' napja',
-                        'warn_status' => $user->pivot->last_warn_time ? (Carbon::parse($user->pivot->last_warn_time)->diffInDays(now()) < 7 ? 'Aktív' : '') : '',
+                        'status' => collect([
+                            $user->pivot->freedom_expiring && Carbon::parse($user->pivot->freedom_expiring)->isFuture() ? 'Szab.' : null,
+                            $user->pivot->last_warn_time && Carbon::parse($user->pivot->last_warn_time)->diffInDays(now()) < 7 ? 'Figy.' : null,
+                        ])->filter()->join(' / '),
                     ];
                 })
                 ->withQueryString(),
