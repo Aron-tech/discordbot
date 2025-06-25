@@ -64,7 +64,9 @@ class extends Component {
         $channels = cache()->remember($this->guild->guild_id . '_channels', 15, function () {
             return getGuildData($this->guild->guild_id, 'channels');
         });
-        return collect($channels)->map(function ($channel) {
+        return collect($channels)
+            ->sortBy('position')
+            ->map(function ($channel) {
             return [
                 'label' => $channel['name'],
                 'value' => $channel['id'],

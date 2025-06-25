@@ -60,6 +60,7 @@ class extends Component {
         $ic_role_ids = getRoleValue($this->guild, 'ic_roles');
 
         $this->ic_roles = collect($roles)
+            ->sortBy('position')
             ->filter(function ($role) use ($ic_role_ids) {
                 return in_array($role['id'], $ic_role_ids);
             })
