@@ -35,11 +35,13 @@ class extends Component {
             return to_route('guild.selector');
 
         $pivot = $user?->pivot ?? null;
-    
+
 
         $this->freedom_date = $pivot->freedom_expiring
             ? Carbon::parse($pivot->freedom_expiring)->format('Y-m-d')
             : null;
+
+        $this->freedom_date = $this->freedom_date < now()->format('Y-m-d') ? null : $this->freedom_date;
     }
 
     /*#[Computed]
