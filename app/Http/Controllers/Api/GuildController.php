@@ -50,6 +50,18 @@ class GuildController extends Controller
         ], 200);
     }
 
+    public function update(GuildRequest $request, Guild $guild): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $guild->update([
+            'name' => $validated['name'] ?? $guild->name,
+            'installed' => $validated['installed'] ?? $guild->installed,
+        ]);
+
+        return response()->json(['message' => 'Guild sikeresen frissítve.'], 200);
+    }
+
     public function getGuildList(): JsonResponse
     {
         $guild_ids = Guild::where('installed', true)->pluck('guild_id');

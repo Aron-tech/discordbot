@@ -11,6 +11,7 @@ class GuildRequest extends FormRequest
         return [
             'guild_id' => ['required', 'string'],
             'name' => ['required', 'string', 'min:3', 'max:50'],
+            'installed' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -16,6 +16,8 @@ Route::middleware([CheckApiKeyMiddleware::class, HandleModelNotFoundMiddleware::
 
     Route::patch('guilds/{guild}', [GuildController::class, 'install']);
 
+    Route::put('guilds/{guild}', [GuildController::class, 'update']);
+
     Route::get('guilds/', [GuildController::class, 'getGuildList'])->name('guilds.all');
 
     Route::prefix('guilds/{guild}')->group(function () {
