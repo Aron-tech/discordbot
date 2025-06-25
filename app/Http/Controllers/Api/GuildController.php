@@ -41,6 +41,8 @@ class GuildController extends Controller
             $settings[$setting_type->value] = getChannelValue($guild, $setting_type->value);
         }
 
+        Log::info($settings);
+
         return response()->json([
             'message' => 'Guild sikeresen lekérdezve.',
             'installed' => $guild->installed,
