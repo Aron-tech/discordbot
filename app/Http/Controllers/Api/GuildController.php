@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GuildRequest;
 use App\Models\Guild;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 
 class GuildController extends Controller
 {
@@ -41,8 +40,6 @@ class GuildController extends Controller
         foreach (SettingTypeEnum::cases() as $setting_type) {
             $settings[$setting_type->value] = getSettingValue($guild, $setting_type->value);
         }
-
-        Log::info($settings);
 
         return response()->json([
             'message' => 'Guild sikeresen lekérdezve.',
