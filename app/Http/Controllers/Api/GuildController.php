@@ -37,6 +37,7 @@ class GuildController extends Controller
             $channels[$channel_type->value] = getChannelValue($guild, $channel_type->value);
         }
 
+        $settings = [];
         foreach (SettingTypeEnum::cases() as $setting_type) {
             $settings[$setting_type->value] = getChannelValue($guild, $setting_type->value);
         }
