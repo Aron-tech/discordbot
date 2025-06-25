@@ -66,14 +66,14 @@ if (! function_exists('getChannelValue')) {
 }
 
 if (! function_exists('getRoleValue')) {
-    function getRoleValue($model, $key, $default = null): string|array|null
+    function getRoleValue($model, $key, $default = null)
     {
         return data_get($model->roles, $key, $default);
     }
 }
 
 if (! function_exists('getSettingValue')) {
-    function getSettingValue($model, $key, $default = null): int|string|array|null
+    function getSettingValue($model, $key, $default = null)
     {
         return data_get($model->settings, $key, $default);
     }
