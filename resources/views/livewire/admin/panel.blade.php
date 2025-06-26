@@ -430,12 +430,14 @@ class extends Component {
                 ->selectRaw('DATEDIFF(NOW(), guild_user.created_at) as in_guild_days')
                 ->orderBy(...array_values($this->sort))
                 ->when($this->search, function (Builder $query) {
-                    $query->where('discord_id', 'like', "%{$this->search}%")
-                        ->orWhere('name', 'like', "%{$this->search}%")
-                        ->orWhere('guild_user.ic_name', 'like', "%{$this->search}%")
-                        ->orWhere('guild_user.ic_number', 'like', "%{$this->search}%")
-                        ->orWhere('guild_user.ic_tel', 'like', "%{$this->search}%")
-                        ->orWhere('email', 'like', "%{$this->search}%");
+                    $query->where(function ($subQuery) {
+                        $subQuery->where('discord_id', 'like', "%{$this->search}%")
+                            ->orWhere('name', 'like', "%{$this->search}%")
+                            ->orWhere('guild_user.ic_name', 'like', "%{$this->search}%")
+                            ->orWhere('guild_user.ic_number', 'like', "%{$this->search}%")
+                            ->orWhere('guild_user.ic_tel', 'like', "%{$this->search}%")
+                            ->orWhere('email', 'like', "%{$this->search}%");
+                    });
                 })
                 ->paginate($this->quantity)
                 ->through(function ($user) {
