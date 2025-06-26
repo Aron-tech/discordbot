@@ -121,7 +121,7 @@ class extends Component {
 }; ?>
 
 <div>
-    <div class="flex items-center w-1/4 mx-auto">
+    <div class="flex items-center sm:w-1/2 lg:w-1/4 mx-auto">
         <x-stats icon="user-group" :number="$active_duties_count" wire:click="resetPage()"
                  title="Szolgálatban lévők száma" footer="Kattints a kártyára az oldal az adatok frissítéséért."
                  animated/>

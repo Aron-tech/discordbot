@@ -104,7 +104,7 @@ class extends Component {
         <x-avatar image="{{$user->avatar}}" lg/>
         <x-h4 class="my-auto dark:text-white uppercase">{{$user->name}}</x-h4>
     </div>
-    <div class="flex my-10 gap-2">
+    <div class="flex flex-col lg:flex-row my-10 gap-2">
         <x-stats :number="dutyTimeFormatter((int) $user->period_duty)" title="Aktuális szolgálati idő" icon="clock"/>
         <x-stats :number="dutyTimeFormatter($user->total_duty)" title="Összes szolgálati idő" icon="clock"/>
         <x-stats :number="$days_in_role" animated title="Rangon eltöltött napok száma"
