@@ -181,6 +181,7 @@ class DutyController extends Controller
     public function getActiveDuty(Guild $guild): JsonResponse
     {
         $active_duties = $guild->duties()
+            ->whereNull('value')
             ->whereNull('end_time')
             ->select('user_discord_id', 'start_time')
             ->get()
