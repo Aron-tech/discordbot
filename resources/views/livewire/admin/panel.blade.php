@@ -464,6 +464,11 @@ class extends Component {
 }; ?>
 
 <div>
+    <div class="flex justify-center sm:w-1/2 lg:w-1/4 mx-auto my-4">
+        <x-stats icon="user-group" :number="$this->guild->users()->count()" wire:click="resetPage()"
+                 title="Összes felhasználó" footer="Kattints a kártyára az oldal az adatok frissítéséért."
+                 animated/>
+    </div>
     <x-card header="Összes tagra vonatkozó kezelések" minimize="mount">
         <div class="flex flex-col lg:flex-row gap-4">
             <x-button text="Szolgálati idők ellenőrzése" wire:click="autoReportDuty" icon="shield-check"/>
