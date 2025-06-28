@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BotStatusController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Middleware\ValidateGuildSelectionMiddleware;
 use App\Http\Middleware\VerifyDeveloperMiddleware;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+
+Route::get('/bot-status', [BotStatusController::class, 'index']);
 
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 
@@ -19,6 +22,7 @@ Route::get('login/discord/callback', [AuthController::class, 'callback']);
 
 Route::get('/cache-clear', function () {
     \Artisan::call('cache:clear');
+
     return 'Cache cleared successfully.';
 })->name('cache.clear')->middleware(['auth', VerifyDeveloperMiddleware::class]);
 

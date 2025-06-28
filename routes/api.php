@@ -4,11 +4,14 @@ use App\Http\Controllers\Api\BlackListController;
 use App\Http\Controllers\Api\DutyController;
 use App\Http\Controllers\Api\GuildController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\BotStatusController;
 use App\Http\Middleware\CheckApiKeyMiddleware;
 use App\Http\Middleware\HandleModelNotFoundMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([CheckApiKeyMiddleware::class, HandleModelNotFoundMiddleware::class])->group(function () {
+
+    Route::post('/bot-status', [BotStatusController::class, 'store']);
 
     Route::post('guild/create', [GuildController::class, 'store']);
 
