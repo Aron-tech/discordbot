@@ -12,7 +12,7 @@ class BotStatusController extends Controller
     {
         $last_ping = BotStatus::select('last_ping_at')->first();
 
-        if (! $last_ping || Carbon::parse($last_ping)->diffInMinutes(now()) > 5) {
+        if (! $last_ping || Carbon::parse($last_ping->last_ping_at)->diffInMinutes(now()) > 5) {
             return response('Bot offline', 503);
         }
 
