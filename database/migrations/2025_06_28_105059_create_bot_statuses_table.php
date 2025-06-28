@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('bot_statuses', function (Blueprint $table) {
             $table->id();
             $table->dateTime('last_ping_at')->nullable();
+            $table->timestamps();
         });
     }
 
