@@ -80,7 +80,7 @@ if (! function_exists('getSettingValue')) {
 }
 
 if (! function_exists('dutyTimeFormatter')) {
-    function dutyTimeFormatter(int $minutes): string
+    function dutyTimeFormatter(int $minutes = 0): string
     {
         $hours = floor($minutes / 60);
         $remaining_minutes = $minutes % 60;

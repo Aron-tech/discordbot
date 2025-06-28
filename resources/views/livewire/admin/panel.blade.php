@@ -28,9 +28,9 @@ class extends Component {
 
     public bool $modal = false;
     public ?string $period_duty_time = null;
-    public int $add_period_duty_time = 0;
+    public ?int $add_period_duty_time = 0;
     public ?string $total_duty_time = null;
-    public int $add_total_duty_time = 0;
+    public ?int $add_total_duty_time = 0;
 
     public ?string $selected_user_role = null;
     public array $ic_roles = [];
@@ -76,15 +76,39 @@ class extends Component {
 
     public function updatedAddPeriodDutyTime()
     {
-        $this->period_duty_time = $this->formatMinutesToHHMM($this->selected_user->periodDutyTime($this->guild) + $this->add_period_duty_time);
+        $addMinutes = $this->safeCastToInt($this->add_period_duty_time);
+        $this->period_duty_time = dutyTimeFormatter(
+            $this->selected_user->periodDutyTime($this->guild) + $addMinutes
+        );
         $this->updatedAddTotalDutyTime();
     }
 
     public function updatedAddTotalDutyTime()
     {
-        $this->total_duty_time = $this->formatMinutesToHHMM($this->selected_user->totalDutyTime($this->guild) + $this->add_total_duty_time + $this->add_period_duty_time);
+        $addPeriod = $this->safeCastToInt($this->add_period_duty_time);
+        $addTotal = $this->safeCastToInt($this->add_total_duty_time);
+
+        $this->total_duty_time = $this->formatMinutesToHHMM(
+            $this->selected_user->totalDutyTime($this->guild) + $addTotal + $addPeriod
+        );
     }
 
+    private function safeCastToInt($value): int
+    {
+        if (empty($value) || $value === null || $value === '') {
+            return 0;
+        }
+
+        $value = (string) $value;
+
+        $cleaned = preg_replace('/[^0-9\-]/', '', $value);
+
+        if (empty($cleaned) || $cleaned === '-') {
+            return 0;
+        }
+
+        return (int) $cleaned;
+    }
 
     public function addDuty(DutyTypeEnum $type)
     {
@@ -488,16 +512,16 @@ class extends Component {
         <div class="flex flex-col gap-4">
             <x-card header="Szolgálati idő szerkesztése" minimize>
                 <div class="flex flex-col lg:flex-row gap-2">
-                    <x-number wire:model.live="add_period_duty_time" step="5"/>
-                    <x-input wire:model.live="period_duty_time" readonly/>
+                    <x-number wire:model.live.debounce.500ms="add_period_duty_time" step="5"/>
+                    <x-input wire:model.live.debounce.500ms="period_duty_time" readonly/>
                     <x-button icon="plus" wire:click="addDuty('{{DutyTypeEnum::PERIOD}}')"/>
                     <x-button icon="trash" color="red" wire:click="deleteUserDuties('{{DutyTypeEnum::PERIOD}}')"/>
                 </div>
             </x-card>
             <x-card header="Összes szolgálati idő szerkesztése" minimize="mount">
                 <div class="flex flex-col lg:flex-row gap-2">
-                    <x-number wire:model.live="add_total_duty_time" step="5"/>
-                    <x-input wire:model.live="total_duty_time" readonly/>
+                    <x-number wire:model.live.debounce.500ms="add_total_duty_time" step="5"/>
+                    <x-input wire:model.live.debounce.500ms="total_duty_time" readonly/>
                     <x-button icon="plus" wire:click="addDuty('{{DutyTypeEnum::TOTAL}}')"/>
                     <x-button icon="trash" color="red" wire:click="deleteUserDuties('{{DutyTypeEnum::TOTAL}}')"/>
                 </div>
