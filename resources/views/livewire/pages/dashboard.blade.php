@@ -71,8 +71,9 @@ class extends Component {
     {
         $user = $this->guild->users()
             ->where('discord_id', auth()->id())
-            ->withSum('duties as period_duty', 'value')
             ->first();
+
+        $user->period_duty = $user->periodDutyTime($this->guild);
 
         $user->total_duty = $user->totalDutyTime($this->guild);
 

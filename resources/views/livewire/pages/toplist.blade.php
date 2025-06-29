@@ -22,12 +22,18 @@ class extends Component {
     {
         $this->guild = GuildSelector::getGuild();
 
-        $this->period_top_users = $this->guild->users()->withSum('duties', 'value')
+        $this->period_top_users = $this->guild->users()
+            ->withSum(['duties' => function ($query) {
+                $query->where('guild_id', $this->guild->guild_id);
+            }], 'value')
             ->orderBy('duties_sum_value', 'desc')
             ->take(10)
             ->get();
 
-        $this->total_top_users = $this->guild->users()->withSum('dutiesWithTrashed', 'value')
+        $this->total_top_users = $this->guild->users()
+            ->withSum(['duties' => function ($query) {
+                $query->where('guild_id', $this->guild->guild_id);
+            }], 'value')
             ->orderBy('duties_with_trashed_sum_value', 'desc')
             ->take(10)
             ->get();
