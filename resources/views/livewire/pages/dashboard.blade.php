@@ -79,10 +79,33 @@ class extends Component {
         $days_in_role = (int)Carbon::parse($user->pivot->last_role_time)->diffInDays(now());
         $days_in_faction = (int)Carbon::parse($user->pivot->created_at)->diffInDays(now());
 
+        $member_data = getMemberData($this->guild->guild_id, $user->discord_id);
+
+        $ic_role = null;
+
+        if ($member_data && is_array($member_data['roles']) && getRoleValue($this->guild, 'ic_roles')) {
+            $ic_role = array_intersect($member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
+        }
+
+        $guild_roles = cache()->remember($this->guild->guild_id. 'guild_roles', now()->addHours(12), function () {
+            return getGuildData($this->guild->guild_id, 'roles');
+        });
+
+        $role_name = null;
+
+        if ($ic_role && isset($guild_roles)) {
+            $role = collect($guild_roles)->firstWhere('id', $ic_role[0]);
+
+            if ($role) {
+                $role_name = $role['name'];
+            }
+        }
+
         return [
             'user' => $user,
             'days_in_role' => $days_in_role,
             'days_in_faction' => $days_in_faction,
+            'ic_role' => $role_name ?? null,
         ];
     }
 
@@ -100,9 +123,10 @@ class extends Component {
 }; ?>
 
 <div>
-    <div class="flex justify-center gap-4">
+    <div class="flex justify-center items-center gap-4">
         <x-avatar image="{{$user->avatar}}" lg/>
         <x-h4 class="my-auto dark:text-white uppercase">{{$user->name}}</x-h4>
+        <x-badge text="{{$ic_role}}" sm round />
     </div>
     <div class="flex flex-col lg:flex-row my-10 gap-2">
         <x-stats :number="dutyTimeFormatter((int) $user->period_duty)" title="Aktuális szolgálati idő" icon="clock"/>
