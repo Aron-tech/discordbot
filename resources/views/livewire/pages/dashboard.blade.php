@@ -44,29 +44,6 @@ class extends Component {
         $this->freedom_date = $this->freedom_date < now()->format('Y-m-d') ? null : $this->freedom_date;
     }
 
-    /*#[Computed]
-    public function user(): ?User
-    {
-        return $this->guild
-            ? $this->guild->users()
-                ->where('discord_id', auth()->id())
-                ->first()
-            : null;
-    }*/
-
-    /*public function updateData(): void
-    {
-        if ($this->guild) {
-            $this->period_duty = $this->formatMinutesToHHMM($this->user()->periodDutyTime($this->guild));
-            $this->total_duty = $this->formatMinutesToHHMM($this->user()->totalDutyTime($this->guild));
-            $this->days_in_role = Carbon::parse($this->user()->pivot->last_role_time)->diffInDays(now());
-            $this->days_in_faction = Carbon::parse($this->user()->pivot->created_at)->diffInDays(now());
-            $this->freedom_date = $this->user()->pivot->freedom_expiring
-                ? Carbon::parse($this->user()->pivot->freedom_expiring)->format('Y-m-d')
-                : null;
-        }
-    }*/
-
     public function with(): array
     {
         $user = $this->guild->users()
@@ -80,7 +57,11 @@ class extends Component {
         $days_in_role = (int)Carbon::parse($user->pivot->last_role_time)->diffInDays(now());
         $days_in_faction = (int)Carbon::parse($user->pivot->created_at)->diffInDays(now());
 
-        $member_data = getMemberData($this->guild->guild_id, $user->discord_id);
+        $member_data = cache()->remember($this->guild->guild_id . 'member_data_' . $user->discord_id, now()->addMinutes(30), function () use ($user) {
+            return getMemberData($this->guild->guild_id, $user->discord_id);
+        });
+
+
 
         $ic_role = null;
 
