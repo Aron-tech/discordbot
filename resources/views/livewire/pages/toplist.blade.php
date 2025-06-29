@@ -24,15 +24,15 @@ class extends Component {
 
         $this->period_top_users = $this->guild->users()
             ->withSum(['duties' => function ($query) {
-                $query->where('guild_id', $this->guild->guild_id);
+                $query->where('guild_guild_id', $this->guild->guild_id);
             }], 'value')
             ->orderBy('duties_sum_value', 'desc')
             ->take(10)
             ->get();
 
         $this->total_top_users = $this->guild->users()
-            ->withSum(['duties' => function ($query) {
-                $query->where('guild_id', $this->guild->guild_id);
+            ->withSum(['dutiesWithTrashed' => function ($query) {
+                $query->where('guild_guild_id', $this->guild->guild_id);
             }], 'value')
             ->orderBy('duties_with_trashed_sum_value', 'desc')
             ->take(10)

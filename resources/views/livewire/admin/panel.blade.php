@@ -449,10 +449,10 @@ class extends Component {
 
             'rows' => $this->guild->users()
                 ->withSum(['duties' => function ($query) {
-                    $query->where('guild_id', $this->guild->guild_id);
+                    $query->where('guild_guild_id', $this->guild->guild_id);
                 }], 'value')
                 ->withSum(['dutiesWithTrashed' => function ($query) {
-                    $query->where('guild_id', $this->guild->guild_id);
+                    $query->where('guild_guild_id', $this->guild->guild_id);
                 }], 'value')
                 ->selectRaw('DATEDIFF(NOW(), COALESCE(guild_user.last_role_time, guild_user.created_at)) as in_role_days')
                 ->selectRaw('DATEDIFF(NOW(), guild_user.created_at) as in_guild_days')
