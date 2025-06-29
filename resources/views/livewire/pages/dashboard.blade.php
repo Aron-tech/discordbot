@@ -93,12 +93,11 @@ class extends Component {
 
         $role_name = null;
 
-        if ($ic_role && isset($guild_roles)) {
-            $role = collect($guild_roles)->firstWhere('id', $ic_role[0]);
+        $first_role_id = !empty($ic_role) ? array_values($ic_role)[0] : null;
 
-            if ($role) {
-                $role_name = $role['name'];
-            }
+        if ($first_role_id && isset($guild_roles)) {
+            $role = collect($guild_roles)->firstWhere('id', $first_role_id);
+            $role_name = $role['name'] ?? null;
         }
 
         return [
