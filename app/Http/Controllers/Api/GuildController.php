@@ -77,14 +77,13 @@ class GuildController extends Controller
     public function getExpiredUserStates(Guild $guild): JsonResponse
     {
         $expired_warned_users = $guild->users()
-            ->wherePivot('last_warn_time', '<', now())
+            ->wherePivot('last_warn_time', '<', now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7)))
             ->pluck('discord_id');
 
         Log::info('Expired warned users', ['guild_id' => $guild->guild_id, 'users' => $expired_warned_users]);
 
         $expired_holiday_users = $guild->users()
-            ->where('guild_user.freedom_expiring', '<', now())
-            ->where('guild_user.guild_guild_id', $guild->guild_id)
+            ->wherePivot('freedom_expiring', '<', now())
             ->pluck('discord_id');
 
         return response()->json([
