@@ -10,6 +10,7 @@ use App\Http\Requests\GuildRequest;
 use App\Models\Guild;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class GuildController extends Controller
 {
@@ -78,6 +79,8 @@ class GuildController extends Controller
         $expired_warned_users = $guild->users()
             ->where('guild_user.last_warn_time', '<', now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7)))
             ->pluck('discord_id');
+
+        Log::info('Expired warned users', ['guild_id' => $guild->guild_id, 'users' => $expired_warned_users]);
 
         $expired_holiday_users = $guild->users()
             ->where('guild_user.freedom_expiring', '<', now())
