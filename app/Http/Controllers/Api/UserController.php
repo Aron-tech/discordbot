@@ -89,7 +89,7 @@ class UserController
             'ic_name' => $validated['ic_name'] ?? $pivot->ic_name,
             'ic_number' => $validated['ic_number'] ?? $pivot->ic_number,
             'ic_tel' => $validated['ic_tel'] ?? $pivot->ic_tel,
-            'last_role_time' => $validated['last_role_time'] ?? $pivot->last_role_time,
+            'last_role_time' => $validated['last_role_time'] ?? ($pivot->last_role_time ?? $pivot->created_at),
             'last_warn_time' => $validated['last_warn_time'] ?? $pivot->last_warn_time,
             'freedom_expiring' => $validated['freedom_expiring'] ?? $pivot->freedom_expiring,
         ]);
