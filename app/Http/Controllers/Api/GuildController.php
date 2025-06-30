@@ -107,12 +107,12 @@ class GuildController extends Controller
                 $discord_id = is_array($user) ? $user['id'] : $user;
                 $escalated = is_array($user) ? ($user['escalated'] ?? false) : false;
 
-                $newValue = $escalated
+                $new_date = $escalated
                     ? now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7))
                     : null;
 
                 $guild->users()->where('discord_id', $discord_id)
-                    ->update(['guild_user.last_warn_time' => $newValue]);
+                    ->update(['guild_user.last_warn_time' => $new_date]);
             }
         }
 
@@ -121,7 +121,7 @@ class GuildController extends Controller
                 ->update(['guild_user.freedom_expiring' => null]);
         }
 
-        return response()->json(['message' => 'Expired user states cleared.'], 200);
+        return response()->json(['message' => 'Expired user states updated.'], 200);
     }
 
     public function install(Guild $guild): JsonResponse
