@@ -72,6 +72,32 @@ class GuildController extends Controller
         ], 200);
     }
 
+    public function expiredUserStates(Guild $guild): JsonResponse
+    {
+        $expired_warned_users = $guild->users()
+            ->where('guild_user.last_warn_time', '<', now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7)))
+            ->pluck('discord_id');
+
+        $guild->users()->whereIn('discord_id', $expired_warned_users)
+            ->update(['guild_user.last_warn_time' => null]);
+
+        $expired_holiday_users = $guild->users()
+            ->where('guild_user.freedom_expiring', '<', now())
+            ->pluck('discord_id');
+
+        $guild->users()->whereIn('discord_id', $expired_holiday_users)
+            ->update(['guild_user.freedom_expiring' => null]);
+
+        return response()->json([
+            'message' => 'Sikeresen lekérdezted a lejárt szabadságok és lejárt figyelmeztetéssel rendelkező felhasználókat.',
+            'expired_warned_users' => $expired_warned_users,
+            'expired_holiday_users' => $expired_holiday_users,
+            'log_channel' => getChannelValue($guild, ChannelTypeEnum::DEFAULT_LOG->value),
+            'holiday_role' => getRoleValue($guild, RoleTypeEnum::FREEDOM_ROLE->value),
+            'warn_role' => getRoleValue($guild, RoleTypeEnum::WARN_ROLES->value),
+        ], 200);
+    }
+
     public function install(Guild $guild): JsonResponse
     {
         $is_empty_column = false;

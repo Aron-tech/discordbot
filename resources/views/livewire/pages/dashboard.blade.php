@@ -61,8 +61,6 @@ class extends Component {
             return getMemberData($this->guild->guild_id, $user->discord_id);
         });
 
-
-
         $ic_role = null;
 
         if ($member_data && is_array($member_data['roles']) && getRoleValue($this->guild, 'ic_roles')) {

@@ -27,6 +27,7 @@ Route::middleware([CheckApiKeyMiddleware::class, HandleModelNotFoundMiddleware::
 
         Route::prefix('/users')->group(function () {
             Route::post('/', [UserController::class, 'addUser']);
+            Route::get('/expired', [GuildController::class, 'expiredUserStates']);
             Route::get('/{user}', [UserController::class, 'getUser']);
             Route::delete('/{user}', [UserController::class, 'removeUser']);
             Route::put('/{user}', [UserController::class, 'updateUserPivot']);
