@@ -89,7 +89,7 @@ class GuildController extends Controller
             'expired_holiday_users' => $expired_holiday_users,
             'log_channel' => getChannelValue($guild, ChannelTypeEnum::DEFAULT_LOG->value),
             'holiday_role' => getRoleValue($guild, RoleTypeEnum::FREEDOM_ROLE->value),
-            'warn_role' => getRoleValue($guild, RoleTypeEnum::WARN_ROLES->value),
+            'warn_roles' => getRoleValue($guild, RoleTypeEnum::WARN_ROLES->value),
         ], 200);
     }
 
