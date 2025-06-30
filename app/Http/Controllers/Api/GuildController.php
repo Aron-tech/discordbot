@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GuildRequest;
 use App\Models\Guild;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class GuildController extends Controller
 {
@@ -72,21 +73,15 @@ class GuildController extends Controller
         ], 200);
     }
 
-    public function expiredUserStates(Guild $guild): JsonResponse
+    public function getExpiredUserStates(Guild $guild): JsonResponse
     {
         $expired_warned_users = $guild->users()
             ->where('guild_user.last_warn_time', '<', now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7)))
             ->pluck('discord_id');
 
-        $guild->users()->whereIn('discord_id', $expired_warned_users)
-            ->update(['guild_user.last_warn_time' => null]);
-
         $expired_holiday_users = $guild->users()
             ->where('guild_user.freedom_expiring', '<', now())
             ->pluck('discord_id');
-
-        $guild->users()->whereIn('discord_id', $expired_holiday_users)
-            ->update(['guild_user.freedom_expiring' => null]);
 
         return response()->json([
             'message' => 'Sikeresen lekérdezted a lejárt szabadságok és lejárt figyelmeztetéssel rendelkező felhasználókat.',
@@ -96,6 +91,28 @@ class GuildController extends Controller
             'holiday_role' => getRoleValue($guild, RoleTypeEnum::FREEDOM_ROLE->value),
             'warn_role' => getRoleValue($guild, RoleTypeEnum::WARN_ROLES->value),
         ], 200);
+    }
+
+    public function clearExpiredUserStates(Request $request, Guild $guild): JsonResponse
+    {
+        $validated = $request->validate([
+            'expired_warned_users' => 'array',
+            'expired_warned_users.*' => 'string',
+            'expired_holiday_users' => 'array',
+            'expired_holiday_users.*' => 'string',
+        ]);
+
+        if (! empty($validated['expired_warned_users'])) {
+            $guild->users()->whereIn('discord_id', $validated['expired_warned_users'])
+                ->update(['guild_user.last_warn_time' => null]);
+        }
+
+        if (! empty($validated['expired_holiday_users'])) {
+            $guild->users()->whereIn('discord_id', $validated['expired_holiday_users'])
+                ->update(['guild_user.freedom_expiring' => null]);
+        }
+
+        return response()->json(['message' => 'Expired user states cleared.'], 200);
     }
 
     public function install(Guild $guild): JsonResponse
