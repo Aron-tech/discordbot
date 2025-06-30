@@ -93,7 +93,7 @@ class GuildController extends Controller
         ], 200);
     }
 
-    public function clearExpiredUserStates(Request $request, Guild $guild): JsonResponse
+    public function updateExpiredUserStates(Request $request, Guild $guild): JsonResponse
     {
         $validated = $request->validate([
             'expired_warned_users' => 'array',
@@ -103,8 +103,17 @@ class GuildController extends Controller
         ]);
 
         if (! empty($validated['expired_warned_users'])) {
-            $guild->users()->whereIn('discord_id', $validated['expired_warned_users'])
-                ->update(['guild_user.last_warn_time' => null]);
+            foreach ($validated['expired_warned_users'] as $user) {
+                $discord_id = is_array($user) ? $user['id'] : $user;
+                $escalated = is_array($user) ? ($user['escalated'] ?? false) : false;
+
+                $newValue = $escalated
+                    ? now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7))
+                    : null;
+
+                $guild->users()->where('discord_id', $discord_id)
+                    ->update(['guild_user.last_warn_time' => $newValue]);
+            }
         }
 
         if (! empty($validated['expired_holiday_users'])) {
