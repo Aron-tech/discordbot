@@ -78,7 +78,6 @@ class GuildController extends Controller
     {
         $expired_warned_users = $guild->users()
             ->wherePivot('last_warn_time', '<', now())
-            ->wherePivot('guild_guild_id', $guild->guild_id)
             ->pluck('discord_id');
 
         Log::info('Expired warned users', ['guild_id' => $guild->guild_id, 'users' => $expired_warned_users]);
