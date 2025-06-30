@@ -97,9 +97,9 @@ class GuildController extends Controller
     {
         $validated = $request->validate([
             'expired_warned_users' => 'array',
-            'expired_warned_users.*' => 'string',
+            'expired_warned_users.*' => 'array',
             'expired_holiday_users' => 'array',
-            'expired_holiday_users.*' => 'string',
+            'expired_holiday_users.*' => 'array',
         ]);
 
         if (! empty($validated['expired_warned_users'])) {
