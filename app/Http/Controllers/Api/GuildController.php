@@ -10,7 +10,7 @@ use App\Http\Requests\GuildRequest;
 use App\Models\Guild;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class GuildController extends Controller
 {
@@ -114,14 +114,16 @@ class GuildController extends Controller
                     : null;
 
                 $guild->users()
-                    ->wherePivot('user_discord_id', $discord_id)
-                    ->update(['guild_user.last_warn_time' => $new_data]);
+                    ->updateExistingPivot($discord_id, [
+                        'last_warn_time' => $new_data,
+                    ]);
             }
         }
 
         if (! empty($validated['expired_holiday_users'])) {
-            $guild->users()
-                ->wherePivotIn('user_discord_id', $validated['expired_holiday_users'])
+            DB::table('guild_user')
+                ->whereIn('user_discord_id', $validated['expired_holiday_users'])
+                ->where('guild_guild_id', $guild->guild_id)
                 ->update(['guild_user.freedom_expiring' => null]);
         }
 
