@@ -108,6 +108,8 @@ class GuildController extends Controller
                 $discord_id = is_array($user) ? $user['id'] : $user;
                 $escalated = is_array($user) ? ($user['escalated'] ?? false) : false;
 
+                Log::info($escalated ? 'Igaz' : 'Hamis');
+
                 $new_date = $escalated
                     ? now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7))
                     : null;
