@@ -14,7 +14,3 @@ Artisan::command('inspire', function () {
 Artisan::command('backup:db', function () {
     Artisan::call(BackupDatabase::class);
 })->purpose('Adatbázis mentés');
-
-Schedule::call(function () {
-    Artisan::call('backup:db');
-})->daily();
