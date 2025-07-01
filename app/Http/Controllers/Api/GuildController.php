@@ -114,7 +114,7 @@ class GuildController extends Controller
                     : null;
 
                 $guild->users()
-                    ->wherePivotIn('user_discord_id', $discord_id)
+                    ->wherePivot('user_discord_id', $discord_id)
                     ->update(['guild_user.last_warn_time' => $new_data]);
             }
         }
