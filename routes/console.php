@@ -17,4 +17,4 @@ Artisan::command('backup:db', function () {
 
 Schedule::call(function () {
     Artisan::call('backup:db');
-})->dailyAt('21:33');
+})->daily();
