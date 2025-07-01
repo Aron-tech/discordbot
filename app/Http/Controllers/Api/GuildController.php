@@ -78,11 +78,11 @@ class GuildController extends Controller
     {
         $expired_warned_users = $guild->users()
             ->wherePivot('last_warn_time', '<', now()->subDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7)))
-            ->pluck('discord_id');
+            ->pluck('guild_user.discord_id');
 
         $expired_holiday_users = $guild->users()
             ->wherePivot('freedom_expiring', '<', now())
-            ->pluck('discord_id');
+            ->pluck('guild_user.discord_id');
 
         return response()->json([
             'message' => 'Sikeresen lekérdezted a lejárt szabadságok és lejárt figyelmeztetéssel rendelkező felhasználókat.',
