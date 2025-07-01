@@ -14,8 +14,8 @@ return new class () extends Migration {
     {
         Schema::create('duties', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Guild::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(User::class)->constrained();
+            $table->foreignIdFor(Guild::class)->constrained();
             $table->bigInteger('value')->nullable();
             $table->dateTime('start_time');
             $table->dateTime('end_time')->nullable();

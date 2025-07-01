@@ -15,7 +15,7 @@ return new class () extends Migration {
         Schema::create('black_lists', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained();
-            $table->foreignIdFor(Guild::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Guild::class)->constrained();
             $table->string('reason');
             $table->timestamps();
         });
