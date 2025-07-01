@@ -4,6 +4,7 @@ use App\Console\Commands\BackupDatabase;
 use Illuminate\Foundation\Console\ClosureCommand;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     /** @var ClosureCommand $this */
@@ -16,4 +17,4 @@ Artisan::command('backup:db', function () {
 
 app(Schedule::class)->call(function () {
     Artisan::call('backup:db');
-})->dailyAt('21:30');
+})->dailyAt('21:31');
