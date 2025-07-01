@@ -14,6 +14,6 @@ Artisan::command('backup:db', function () {
     Artisan::call(BackupDatabase::class);
 })->purpose('Adatbázis mentés');
 
-app(Schedule::class)
-    ->command('backup:db')
-    ->daily();
+app(Schedule::class)->call(function () {
+    Artisan::call('backup:db');
+})->dailyAt('21:30');
