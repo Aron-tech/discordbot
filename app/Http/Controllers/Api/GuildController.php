@@ -96,7 +96,13 @@ class GuildController extends Controller
 
     public function updateExpiredUserStates(Request $request, Guild $guild): JsonResponse
     {
-        Log::info($request);
+        $validated = $request->validate([
+            'expired_warned_users' => 'array',
+            'expired_warned_users.*.id' => 'required|string|max:255',  // Discord ID hosszának korlátozása
+            'expired_warned_users.*.escalated' => 'required|boolean',
+            'expired_holiday_users' => 'array',
+            'expired_holiday_users.*' => 'string|max:255',  // Discord ID hosszának korlátozása
+        ]);
 
         if (! empty($validated['expired_warned_users'])) {
             foreach ($validated['expired_warned_users'] as $user) {
