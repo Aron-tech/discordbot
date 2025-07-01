@@ -421,6 +421,8 @@ class extends Component {
             $this->selected_user_role = reset($matched) ?: null;
         }
 
+        dd($this->selected_user_role);
+
         $this->ic_name = $this->selected_user->pivot->ic_name;
         $this->ic_number = $this->selected_user->pivot->ic_number;
         $this->ic_tel = $this->selected_user->pivot->ic_tel;
