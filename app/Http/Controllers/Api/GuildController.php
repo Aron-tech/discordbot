@@ -80,8 +80,6 @@ class GuildController extends Controller
             ->wherePivot('last_warn_time', '<', now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7)))
             ->pluck('discord_id');
 
-        Log::info('Expired warned users', ['guild_id' => $guild->guild_id, 'users' => $expired_warned_users]);
-
         $expired_holiday_users = $guild->users()
             ->wherePivot('freedom_expiring', '<', now())
             ->pluck('discord_id');
@@ -102,7 +100,7 @@ class GuildController extends Controller
             'expired_warned_users' => 'array',
             'expired_warned_users.*' => 'array',
             'expired_holiday_users' => 'array',
-            'expired_holiday_users.*' => 'array',
+            'expired_holiday_users.*' => 'string',
         ]);
 
         if (! empty($validated['expired_warned_users'])) {
