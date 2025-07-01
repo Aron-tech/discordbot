@@ -8,7 +8,6 @@ use App\Http\Requests\UserRequest;
 use App\Models\Guild;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 
 class UserController
 {
