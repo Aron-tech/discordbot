@@ -96,7 +96,7 @@ class GuildController extends Controller
 
     public function updateExpiredUserStates(Request $request, Guild $guild): JsonResponse
     {
-        Log::info($request['expired_warned_users']);
+        Log::info($request);
 
         if (! empty($validated['expired_warned_users'])) {
             foreach ($validated['expired_warned_users'] as $user) {
