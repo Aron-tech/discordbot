@@ -96,26 +96,19 @@ class GuildController extends Controller
 
     public function updateExpiredUserStates(Request $request, Guild $guild): JsonResponse
     {
-        $validated = $request->validate([
-            'expired_warned_users' => 'array',
-            'expired_warned_users.*' => 'array',
-            'expired_holiday_users' => 'array',
-            'expired_holiday_users.*' => 'string',
-        ]);
+        Log::info($request['expired_warned_users']);
 
         if (! empty($validated['expired_warned_users'])) {
             foreach ($validated['expired_warned_users'] as $user) {
                 $discord_id = is_array($user) ? $user['id'] : $user;
                 $escalated = is_array($user) ? ($user['escalated'] ?? false) : false;
 
-                Log::info($escalated ? 'Igaz' : 'Hamis');
-
-                $new_date = $escalated
+                $new_data = $escalated
                     ? now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7))
                     : null;
 
                 $guild->users()->where('discord_id', $discord_id)
-                    ->update(['guild_user.last_warn_time' => $new_date]);
+                    ->update(['guild_user.last_warn_time' => $new_data]);
             }
         }
 
