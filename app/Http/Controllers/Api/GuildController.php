@@ -113,13 +113,15 @@ class GuildController extends Controller
                     ? now()->addDays(getSettingValue($guild, SettingTypeEnum::WARN_TIME->value, 7))
                     : null;
 
-                $guild->users()->where('discord_id', $discord_id)
+                $guild->users()
+                    ->wherePivotIn('user_discord_id', $discord_id)
                     ->update(['guild_user.last_warn_time' => $new_data]);
             }
         }
 
         if (! empty($validated['expired_holiday_users'])) {
-            $guild->users()->whereIn('discord_id', $validated['expired_holiday_users'])
+            $guild->users()
+                ->wherePivotIn('user_discord_id', $validated['expired_holiday_users'])
                 ->update(['guild_user.freedom_expiring' => null]);
         }
 
