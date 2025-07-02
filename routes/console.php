@@ -1,6 +1,5 @@
 <?php
 
-use App\Console\Commands\BackupDatabase;
 use Illuminate\Foundation\Console\ClosureCommand;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -11,6 +10,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('backup:db', function () {
-    Artisan::call(BackupDatabase::class);
-})->purpose('Adatbázis mentés');
+Schedule::command('backup:clean')->daily()->at('11:30');
+Schedule::command('php artisan backup:run --only-db')->daily()->at('12:00');
