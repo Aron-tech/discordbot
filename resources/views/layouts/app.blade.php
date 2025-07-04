@@ -43,11 +43,14 @@
                         <x-side-bar.separator text="Menü" line />
                         <x-side-bar.item text="{{__('Statisztikád')}}" icon="book-open" :route="route('dashboard')" :current="Route::currentRouteNamed('dashboard')"/>
                         <x-side-bar.item text="{{__('Toplista')}}" icon="numbered-list" :route="route('toplist')" :current="Route::currentRouteNamed('toplist')"/>
+                        <x-side-bar.item text="{{__('Vizsgák')}}" icon="academic-cap" :route="route('exam')" :current="Route::currentRouteNamed('exam')"/>
                        @if(auth()->user()->can('hasPermission', [\App\Models\GuildSelector::getGuild(), \App\Enums\PermissionEnum::VIEW_ADMIN_PANEL]))
                             <x-side-bar.separator text="Admin Menü" line />
                             <x-side-bar.item text="{{__('Panel')}}" icon="computer-desktop" :route="route('admin.panel')"  :current="Route::currentRouteNamed('admin.panel')"/>
                             <x-side-bar.item text="{{__('Szolgálatban lévők')}}" icon="clipboard-document-list" :route="route('admin.duty.active')"  :current="Route::currentRouteNamed('admin.duty.active')"/>
                             <x-side-bar.item text="{{__('Duty log')}}" icon="archive-box" :route="route('admin.logs')"  :current="Route::currentRouteNamed('admin.logs')"/>
+                            <x-side-bar.item text="{{__('Vizsga panel')}}" icon="pencil-square" :route="route('admin.exam-manager')"  :current="Route::currentRouteNamed('admin.exam-manager')"/>
+                            <x-side-bar.item text="{{__('Vizsga eredmények')}}" icon="presentation-chart-bar" :route="route('admin.exam-manager')"  :current="Route::currentRouteNamed('admin.exam-manager')"/>
                             <x-side-bar.item text="{{__('Beállítások')}}" icon="cog" :route="route('admin.settings')"  :current="Route::currentRouteNamed('admin.settings')" />
                         @endif
                 </x-side-bar>

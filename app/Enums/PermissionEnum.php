@@ -8,7 +8,9 @@ enum PermissionEnum: string
     case VIEW_YOUR_STATS = 'view_your_stats';
     case VIEW_STATS = 'view_stats';
     case VIEW_ADMIN_PANEL = 'view_admin_panel';
+    case VIEW_EXAM_MANAGER = 'view_exam_manager';
 
+    case VIEW_EXAM_RESULT = 'view_exam_result';
     case VIEW_DUTY_ACTIVE = 'view_duty_active';
     case VIEW_DUTY_LOGS = 'view_duty_logs';
     case VIEW_SETTINGS = 'view_settings';

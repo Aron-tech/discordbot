@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
 
         Volt::route('/dashboard', 'pages.dashboard')->name('dashboard');
         Volt::route('/toplist', 'pages.toplist')->name('toplist');
+        Volt::route('/exam', 'pages.exam')->name('exam');
 
         Route::prefix('admin/')->name('admin.')->group(function () {
 
@@ -46,6 +47,9 @@ Route::middleware(['auth'])->group(function () {
             Volt::route('/duty/active', 'admin.active')->name('duty.active')->middleware('check.permission:view_duty_active');
 
             Volt::route('panel', 'admin.panel')->name('panel')->middleware('check.permission:view_admin_panel');
+
+            Volt::route('exam', 'admin.exam-manager')->name('exam-manager')->middleware('check.permission:view_exam_manager');
+            Volt::route('exam/log', 'admin.exam-result')->name('exam-results')->middleware('check.permission:view_exam_result');
         });
     });
 
