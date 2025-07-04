@@ -78,4 +78,9 @@ class User extends Authenticatable
     {
         return $this->dutiesWithTrashed()->where('guild_guild_id', $guild->guild_id)->sum('value');
     }
+
+    public function exam_results(): HasMany
+    {
+        return $this->hasMany(ExamResult::class);
+    }
 }

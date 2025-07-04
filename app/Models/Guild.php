@@ -48,6 +48,11 @@ class Guild extends Model
         return $this->hasMany(Duty::class)->withTrashed();
     }
 
+    public function exams(): HasMany
+    {
+        return $this->hasMany(Exam::class);
+    }
+
     public function blacklists(): HasMany
     {
         return $this->hasMany(Blacklist::class);
