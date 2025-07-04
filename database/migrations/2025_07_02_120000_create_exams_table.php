@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(Guild::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->unsignedSmallInteger('min_pass_score')->default(1);
+            $table->unsignedSmallInteger('minute_per_task')->default(1);
             $table->unsignedSmallInteger('attempt_count')->default(1);
             $table->boolean('visible')->default(false);
             $table->timestamps();
