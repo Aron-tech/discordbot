@@ -407,7 +407,7 @@ class extends Component {
                                 </div>
                             </div>
                         </x-slot:header>
-                        <div class="flex flex-wrap items-center justify-around gap-4">
+                        <div class="flex flex-wrap items-center gap-4">
                             @foreach($question_data['answers'] ?? [] as $index => $answer)
                                 <div class="flex flex-col gap-2">
                                     <x-textarea :label="'Válasz - ' . $index+1"
