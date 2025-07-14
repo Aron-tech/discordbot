@@ -132,7 +132,7 @@ class extends Component {
             <x-h4 class="mb-4">Kötelező csatlakozni az adminok számára a bot fejlesztői szerverhez!</x-h4>
             <p class="mb-4">A fejlesztői szerverre való csatlakozás után tudod csak használni a bot adminisztrációs funkcióit.</p>
             <div class="flex justify-center">
-                <x-button href="https://discord.gg/rpRxsy2Hna" target="_blank">Csatlakozás</x-button>
+                <x-button href="https://discord.gg/BYNaz3PR6D" target="_blank">Csatlakozás</x-button>
             </div>
             <x-slot:footer>
                 <div class="flex justify-end gap-x-4">
