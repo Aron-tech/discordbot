@@ -44,7 +44,7 @@ class extends Component {
             $user = auth()->user();
             $guild = $this->guild;
 
-            $member_data = Cache::remember("member_data_{$guild->guild_id}_{$user->discord_id}", now()->addMinutes(5), function () use ($guild, $user) {
+            $member_data = Cache::remember("exam_member_data_{$guild->guild_id}_{$user->discord_id}", now()->addMinutes(5), function () use ($guild, $user) {
                 return getMemberData($this->guild->guild_id, $user->discord_id);
             });
 
