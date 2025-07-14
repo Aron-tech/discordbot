@@ -69,7 +69,7 @@ class extends Component {
 
     public function getQuestionsWithAnswers(): ?Collection
     {
-        return $this->selected_exam->questions()->with('answers')->get();
+        return $this->selected_exam->questions()->with('answers')->inRandomOrder()->take($this->selected_exam->q_number)->get();;
     }
 
     #[On('timeUp')]

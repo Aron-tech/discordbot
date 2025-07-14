@@ -13,11 +13,13 @@ class Exam extends Model
         'name',
         'min_pass_score',
         'attempt_count',
+        'minute_per_task',
+        'q_number',
         'visible',
     ];
 
     protected $casts = [
-      'visible' => 'boolean',
+        'visible' => 'boolean',
     ];
 
     public function guild(): BelongsTo

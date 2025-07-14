@@ -30,6 +30,7 @@ class extends Component {
     public int $min_pass_score = 0;
     public int $minute_per_task = 1;
     public bool $exam_visible = false;
+    public int $q_number = 0;
 
     public const EXAM_SESSION_KEY = 'selected_exam_id';
 
@@ -43,6 +44,7 @@ class extends Component {
         $this->min_pass_score = $this->selected_exam->min_pass_score;
         $this->minute_per_task = $this->selected_exam->minute_per_task;
         $this->exam_visible = $this->selected_exam->visible;
+        $this->q_number = $this->selected_exam->q_number;
         $this->question_answer = $this->getQuestionAndAnswer();
         $this->initializeEditingData();
     }
@@ -58,6 +60,7 @@ class extends Component {
             $this->min_pass_score = $this->selected_exam->min_pass_score;
             $this->minute_per_task = $this->selected_exam->minute_per_task;
             $this->exam_visible = $this->selected_exam->visible;
+            $this->q_number = $this->selected_exam->q_number;
             $this->question_answer = $this->getQuestionAndAnswer();
             $this->initializeEditingData();
         }
@@ -100,6 +103,7 @@ class extends Component {
         $this->minute_per_task = 1;
         $this->min_pass_score = 0;
         $this->exam_visible = false;
+        $this->q_number = 0;
         $this->editing_data = [];
     }
 
@@ -271,6 +275,7 @@ class extends Component {
             'attempt_count' => ['integer', 'min:1', 'max:256'],
             'min_pass_score' => ['integer', 'min:1', 'max:256'],
             'minute_per_task' => ['integer', 'min:1', 'max:256'],
+            'q_number' => ['integer', 'min:1', 'max:256'],
             'exam_visible' => ['boolean'],
         ]);
 
@@ -279,6 +284,7 @@ class extends Component {
                 'name' => $validated['exam_name'],
                 'minute_per_task' => $validated['minute_per_task'],
                 'attempt_count' => $validated['attempt_count'],
+                'q_number' => $validated['q_number'],
                 'min_pass_score' => $validated['min_pass_score'],
                 'visible' => $validated['exam_visible'],
             ]);
@@ -339,12 +345,13 @@ class extends Component {
                     Vizsga adatai
                 </x-slot:header>
                 <div class="flex flex-wrap w-full justify-between items-center space-y-4">
-                    <div class="flex flex-col lg:flex-row items-center gap-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-6 items-center gap-4">
                         <x-input label="Vizsga neve" wire:model.live.debounce="exam_name"/>
-                        <x-number label="Egy feladatra jutó idő (percben)" max="256" wire:model.live.debounce="minute_per_task"/>
-                        <x-number label="Maximum probálkozások száma" max="256" wire:model.live.debounce="attempt_count"/>
-                        <x-input readonly label="Összes pontszám" :value="$selected_exam->questions()->count()"/>
+                        <x-number label="Feltett kérdések száma" max="256" wire:model.live.debounce="q_number"/>
                         <x-number label="Minimum pontszám" max="256" wire:model.live.debounce="min_pass_score"/>
+                        <x-input readonly label="Összes pontszám" :value="$selected_exam->questions()->count()"/>
+                        <x-number label="M. Prbálkozások száma" max="256" wire:model.live.debounce="attempt_count"/>
+                        <x-number label="Egy feladatra jutó idő (percben)" max="256" wire:model.live.debounce="minute_per_task"/>
                         <x-toggle label="Látható" wire:model.live.debounce="exam_visible" />
                     </div>
                     <div class="flex flex-wrap items-center gap-4">
