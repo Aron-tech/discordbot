@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PermissionEnum;
+use App\Livewire\Traits\DevDcChecking;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use Livewire\Volt\Component;
@@ -15,12 +16,15 @@ new
 class extends Component {
 
     use Interactions;
+    use DevDcChecking;
 
     public array $bot_guilds = [];
 
     public array $user_owner_guilds = [];
 
     public array $guilds = [];
+
+    public bool $join_dev_guild_modal = false;
 
     public function mount()
     {
@@ -29,7 +33,7 @@ class extends Component {
         if (GuildSelector::hasGuild())
             GuildSelector::clearGuild();
 
-        if(Session::has('selected_exam_id'))
+        if (Session::has('selected_exam_id'))
             Session::forget('selected_exam_id');
     }
 
@@ -66,6 +70,11 @@ class extends Component {
         if (!$guild) {
             $external_url = 'https://discord.com/oauth2/authorize?client_id=1385928816110600302&permissions=8&integration_type=0&scope=bot';
             return $this->dispatch('open-external', url: $external_url);
+        }
+
+        if (auth()->user()->can('hasPermission', [$guild, PermissionEnum::EDIT_SETTINGS]) && !$this->isDevMember(auth()->user()->discord_id)){
+            $this->join_dev_guild_modal = true;
+            return;
         }
 
         if (!$guild->installed && auth()->user()->cannot('hasPermission', [$guild, PermissionEnum::EDIT_SETTINGS])) {
@@ -118,5 +127,19 @@ class extends Component {
         x-data
         x-init="$wire.on('open-external', e => window.open(e.url, '_blank'))"
     ></div>
+    <x-modal wire="join_dev_guild_modal" persistent>
+        <x-card title="Fejlesztői szerver kötelező">
+            <x-h4 class="mb-4">Kötelező csatlakozni az adminok számára a bot fejlesztői szerverhez!</x-h4>
+            <p class="mb-4">A fejlesztői szerverre való csatlakozás után tudod csak használni a bot adminisztrációs funkcióit.</p>
+            <div class="flex justify-center">
+                <x-button href="https://discord.gg/rpRxsy2Hna" target="_blank">Csatlakozás</x-button>
+            </div>
+            <x-slot:footer>
+                <div class="flex justify-end gap-x-4">
+                    <x-button>Kész</x-button>
+                </div>
+            </x-slot:footer>
+        </x-card>
+    </x-modal>
 </div>
 
