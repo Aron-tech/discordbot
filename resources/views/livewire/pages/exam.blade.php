@@ -2,6 +2,7 @@
 
 use App\Models\Exam;
 use App\Models\ExamQuestion;
+use App\Models\Guild;
 use App\Models\GuildSelector;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -29,15 +30,38 @@ class extends Component {
 
     public int $question_count = 0;
 
+    public ?Guild $guild = null;
+
     #[On('selectExam')]
     public function selectExam(Exam $exam): void
     {
-        if(auth()->user()->exam_results()->count() >= $exam->attempt_count){
+        if (auth()->user()->exam_results()->count() >= $exam->attempt_count) {
             $this->toast()->error('Elérted a maximum próbálkozási lehetőséget.')->send();
             return;
         }
 
-        $this->selected_exam = $exam;
+        $user = auth()->user();
+        $guild = $this->guild;
+
+        $member_data = Cache::remember("member_data_{$guild->guild_id}_{$user->discord_id}", now()->addMinutes(5), function () use ($guild, $user) {
+            return getMemberData($this->guild->guild_id, $user->discord_id);
+        });
+
+        $member_roles = $member_data['roles'] ?? [];
+
+        $whitelist = $exam->role_whitelist;
+        if (is_string($whitelist)) {
+            $whitelist = json_decode($whitelist, true);
+        }
+
+        if (!collect($member_roles)->intersect($whitelist)->isNotEmpty()) {
+            $this->toast()->error('Ehhez a vizsgához nem rendelkezel megfelelő Discord szerepkörrel.')->send();
+            return;
+        }
+
+        if (auth()->user())
+
+            $this->selected_exam = $exam;
 
         $this->selected_exam->results()->create([
             'user_discord_id' => auth()->id(),
@@ -76,6 +100,11 @@ class extends Component {
     public function timeUp(): void
     {
         $this->nextQuestion();
+    }
+
+    public function mount(): void
+    {
+        $this->guild = GuildSelector::getGuild();
     }
 
 
@@ -199,61 +228,61 @@ class extends Component {
     @endisset
 </div>
 @script
-    <script>
-        let examTimer = null;
-        let timeLeft = 0;
+<script>
+    let examTimer = null;
+    let timeLeft = 0;
 
-        function startQuestionTimer(minutes) {
-            if (examTimer) {
+    function startQuestionTimer(minutes) {
+        if (examTimer) {
+            clearInterval(examTimer);
+        }
+
+        timeLeft = minutes * 60;
+
+        examTimer = setInterval(() => {
+            timeLeft--;
+
+            updateTimerDisplay();
+
+            if (timeLeft <= 0) {
                 clearInterval(examTimer);
+                // Livewire nextQuestion metódus hívása
+                Livewire.dispatch('timeUp');
             }
+        }, 1000);
+    }
 
-            timeLeft = minutes * 60;
-
-            examTimer = setInterval(() => {
-                timeLeft--;
-
-                updateTimerDisplay();
-
-                if (timeLeft <= 0) {
-                    clearInterval(examTimer);
-                    // Livewire nextQuestion metódus hívása
-                    Livewire.dispatch('timeUp');
-                }
-            }, 1000);
+    function stopQuestionTimer() {
+        if (examTimer) {
+            clearInterval(examTimer);
+            examTimer = null;
         }
+    }
 
-        function stopQuestionTimer() {
-            if (examTimer) {
-                clearInterval(examTimer);
-                examTimer = null;
-            }
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        const timerElement = document.getElementById('question-timer');
+        if (timerElement) {
+            timerElement.textContent = display;
         }
+    }
 
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-            const timerElement = document.getElementById('question-timer');
-            if (timerElement) {
-                timerElement.textContent = display;
-            }
-        }
-
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('questionChanged', (data) => {
-                const minutesPerTask = data[0] || 1;
-                startQuestionTimer(minutesPerTask);
-            });
-
-            Livewire.on('examReset', () => {
-                stopQuestionTimer();
-            });
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('questionChanged', (data) => {
+            const minutesPerTask = data[0] || 1;
+            startQuestionTimer(minutesPerTask);
         });
 
-        window.addEventListener('beforeunload', () => {
+        Livewire.on('examReset', () => {
             stopQuestionTimer();
         });
-    </script>
+    });
+
+    window.addEventListener('beforeunload', () => {
+        stopQuestionTimer();
+    });
+</script>
 @endscript

@@ -25,12 +25,15 @@ class extends Component {
     public ?Collection $question_answer = null;
     public array $editing_data = [];
 
+    public ?array $roles = [];
+
     public string $exam_name = '';
     public int $attempt_count = 1;
     public int $min_pass_score = 0;
     public int $minute_per_task = 1;
     public bool $exam_visible = false;
     public int $q_number = 0;
+    public ?array $role_whitelist = [];
 
     public const EXAM_SESSION_KEY = 'selected_exam_id';
 
@@ -45,6 +48,7 @@ class extends Component {
         $this->minute_per_task = $this->selected_exam->minute_per_task;
         $this->exam_visible = $this->selected_exam->visible;
         $this->q_number = $this->selected_exam->q_number;
+        $this->role_whitelist = $this->selected_exam->role_whitelist;
         $this->question_answer = $this->getQuestionAndAnswer();
         $this->initializeEditingData();
     }
@@ -52,6 +56,8 @@ class extends Component {
     public function mount()
     {
         $this->guild = GuildSelector::getGuild();
+
+        $this->roles = $this->getRoles();
 
         if (Session::has(self::EXAM_SESSION_KEY)) {
             $this->selected_exam = Exam::find(Session::get(self::EXAM_SESSION_KEY));
@@ -61,6 +67,7 @@ class extends Component {
             $this->minute_per_task = $this->selected_exam->minute_per_task;
             $this->exam_visible = $this->selected_exam->visible;
             $this->q_number = $this->selected_exam->q_number;
+            $this->role_whitelist = $this->selected_exam->role_whitelist;
             $this->question_answer = $this->getQuestionAndAnswer();
             $this->initializeEditingData();
         }
@@ -104,7 +111,9 @@ class extends Component {
         $this->min_pass_score = 0;
         $this->exam_visible = false;
         $this->q_number = 0;
+        $this->role_whitelist = [];
         $this->editing_data = [];
+
     }
 
     public function addNewAnswer($question_id): void
@@ -277,6 +286,7 @@ class extends Component {
             'minute_per_task' => ['integer', 'min:1', 'max:256'],
             'q_number' => ['integer', 'min:1', 'max:256'],
             'exam_visible' => ['boolean'],
+            'role_whitelist' => ['array'],
         ]);
 
         if ($validated['exam_name'] && $validated['attempt_count'] && $validated['min_pass_score']) {
@@ -286,6 +296,7 @@ class extends Component {
                 'attempt_count' => $validated['attempt_count'],
                 'q_number' => $validated['q_number'],
                 'min_pass_score' => $validated['min_pass_score'],
+                'role_whitelist' => $validated['role_whitelist'],
                 'visible' => $validated['exam_visible'],
             ]);
 
@@ -313,6 +324,22 @@ class extends Component {
         $this->selected_exam->delete();
         $this->resetSelectedExam();
         $this->toast()->success('Sikeresen törö a vizsga adatai.')->send();
+    }
+
+    private function getRoles()
+    {
+        $roles = cache()->remember($this->guild->guild_id . '_roles', 15, function () {
+            return getGuildData($this->guild->guild_id, 'roles');
+        });
+
+        return collect($roles)
+            ->sortBy('position')
+            ->map(function ($role) {
+                return [
+                    'label' => $role['name'],
+                    'value' => $role['id'],
+                ];
+            })->toArray();
     }
 }; ?>
 
@@ -352,6 +379,7 @@ class extends Component {
                         <x-input readonly label="Összes pontszám" :value="$selected_exam->questions()->count()"/>
                         <x-number label="M. Prbálkozások száma" max="256" wire:model.live.debounce="attempt_count"/>
                         <x-number label="Egy feladatra jutó idő (percben)" max="256" wire:model.live.debounce="minute_per_task"/>
+                        <x-select.styled wire:model="role_whitelist" :options="$this->roles" multiple searchable/>
                         <x-toggle label="Látható" wire:model.live.debounce="exam_visible" />
                     </div>
                     <div class="flex flex-wrap items-center gap-4">

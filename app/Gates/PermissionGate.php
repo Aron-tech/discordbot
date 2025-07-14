@@ -18,7 +18,7 @@ class PermissionGate
             $mod_roles = getRoleValue($guild, RoleTypeEnum::MOD_ROLES->value) ?? [];
             $default_roles = getRoleValue($guild, RoleTypeEnum::DEFAULT_ROLES->value) ?? [];
 
-            $member_data = Cache::remember("member_data_{$guild->guild_id}_{$user->discord_id}", now()->addHours(2), function () use ($guild, $user) {
+            $member_data = Cache::remember("member_data_{$guild->guild_id}_{$user->discord_id}", now()->addMinutes(30), function () use ($guild, $user) {
                 return getMemberData($guild->guild_id, $user->discord_id);
             });
 
