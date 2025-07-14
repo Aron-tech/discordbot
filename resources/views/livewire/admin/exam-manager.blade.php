@@ -356,7 +356,6 @@ class extends Component {
                     </div>
                     <div class="flex flex-wrap items-center gap-4">
                         <x-button.circle icon="bookmark" wire:click="saveExam"/>
-                        <x-button.circle icon="plus" color="green" wire:click="addNewQuestion"/>
                         <x-button.circle icon="trash" color="red" wire:click="deleteExam"/>
                         <x-button.circle icon="arrow-long-left" wire:click="resetSelectedExam"/>
                     </div>
@@ -367,7 +366,7 @@ class extends Component {
                 <x-card>
                     <x-slot:header>
                         <div class="flex flex-wrap gap-6 items-center">
-                            <x-input label="Kérdés" wire:model.live="editing_data.{{$question->id}}.question"/>
+                            <x-textarea label="Kérdés" wire:model.live="editing_data.{{$question->id}}.question"/>
                             <div class="flex flex-wrap items-center gap-2">
                                 <x-button.circle icon="bookmark" wire:click="saveQuestion('{{$question->id}}')"/>
                                 <x-button.circle icon="trash" color="red"
@@ -435,6 +434,11 @@ class extends Component {
                     </x-card>
                 @endif
             @endforeach
+            <x-card>
+                <div class="flex items-center justify-center w-full">
+                    <x-button text="Kérdés hozzáadása" icon="plus" color="green" wire:click="addNewQuestion"/>
+                </div>
+            </x-card>
         </div>
     @endisset
 </div>
