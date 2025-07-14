@@ -324,7 +324,7 @@ class extends Component {
         $this->selected_exam->results()->delete();
         $this->selected_exam->delete();
         $this->resetSelectedExam();
-        $this->toast()->success('Sikeresen törö a vizsga adatai.')->send();
+        $this->toast()->success('Sikeresen törölted a teljes vizsgát.')->send();
     }
 
     private function getRoles()
