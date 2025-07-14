@@ -66,7 +66,7 @@ class extends Component {
             $this->min_pass_score = $this->selected_exam->min_pass_score;
             $this->minute_per_task = $this->selected_exam->minute_per_task;
             $this->exam_visible = $this->selected_exam->visible;
-            $this->q_number = $this->selected_exam->q_number;
+            $this->q_number = $this->selected_exam->q_number ?? 0;
             $this->role_whitelist = $this->selected_exam->role_whitelist;
             $this->question_answer = $this->getQuestionAndAnswer();
             $this->initializeEditingData();
@@ -321,6 +321,7 @@ class extends Component {
             $this->selected_exam->questions()->pluck('id')
         )->delete();
         $this->selected_exam->questions()->delete();
+        $this->selected_exam->results()->delete();
         $this->selected_exam->delete();
         $this->resetSelectedExam();
         $this->toast()->success('Sikeresen törö a vizsga adatai.')->send();
