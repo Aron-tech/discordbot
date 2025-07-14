@@ -40,7 +40,7 @@ class extends Component {
             return;
         }
 
-        if(empty($exam->role_whitelist)){
+        if(!empty($exam->role_whitelist)){
             $user = auth()->user();
             $guild = $this->guild;
 
