@@ -40,27 +40,28 @@ class extends Component {
             return;
         }
 
-        $user = auth()->user();
-        $guild = $this->guild;
+        if(empty($exam->role_whitelist)){
+            $user = auth()->user();
+            $guild = $this->guild;
 
-        $member_data = Cache::remember("member_data_{$guild->guild_id}_{$user->discord_id}", now()->addMinutes(5), function () use ($guild, $user) {
-            return getMemberData($this->guild->guild_id, $user->discord_id);
-        });
+            $member_data = Cache::remember("member_data_{$guild->guild_id}_{$user->discord_id}", now()->addMinutes(5), function () use ($guild, $user) {
+                return getMemberData($this->guild->guild_id, $user->discord_id);
+            });
 
-        $member_roles = $member_data['roles'] ?? [];
+            $member_roles = $member_data['roles'] ?? [];
 
-        $whitelist = $exam->role_whitelist;
-        if (is_string($whitelist)) {
-            $whitelist = json_decode($whitelist, true);
-        }
+            $whitelist = $exam->role_whitelist;
+            if (is_string($whitelist)) {
+                $whitelist = json_decode($whitelist, true);
+            }
 
-        if (!collect($member_roles)->intersect($whitelist)->isNotEmpty()) {
-            $this->toast()->error('Ehhez a vizsgához nem rendelkezel megfelelő Discord szerepkörrel.')->send();
-            return;
+            if (!collect($member_roles)->intersect($whitelist)->isNotEmpty()) {
+                $this->toast()->error('Ehhez a vizsgához nem rendelkezel megfelelő Discord szerepkörrel.')->send();
+                return;
+            }
         }
 
         if (auth()->user())
-
             $this->selected_exam = $exam;
 
         $this->selected_exam->results()->create([
