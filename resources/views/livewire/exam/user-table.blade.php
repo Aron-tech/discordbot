@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\GuildSelector;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 
@@ -31,6 +32,7 @@ new class extends Component {
             ],
 
             'rows' => $guild->exams()
+                ->where('visible', true)
                 ->withCount(['results as user_results_count' => function ($query) {
                     $query->where('user_discord_id', auth()->id());
                 }
@@ -48,7 +50,7 @@ new class extends Component {
 <div>
     <x-table :$headers :$rows filter loading>
         @interact('column_action', $row)
-            <x-button.circle icon="pencil" wire:click="selectExam({{$row['id']}})"/>
+        <x-button.circle icon="pencil" wire:click="selectExam({{$row['id']}})"/>
         @endinteract
     </x-table>
 </div>
