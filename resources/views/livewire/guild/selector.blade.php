@@ -28,6 +28,9 @@ class extends Component {
 
         if (GuildSelector::hasGuild())
             GuildSelector::clearGuild();
+
+        if(Session::has('selected_exam_id'))
+            Session::forget('selected_exam_id');
     }
 
     public function loadGuilds()
