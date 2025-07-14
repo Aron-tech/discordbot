@@ -15,10 +15,12 @@ class Exam extends Model
         'attempt_count',
         'minute_per_task',
         'q_number',
+        'role_whitelist',
         'visible',
     ];
 
     protected $casts = [
+        'role_whitelist' => 'json',
         'visible' => 'boolean',
     ];
 
