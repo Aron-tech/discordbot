@@ -154,9 +154,9 @@ class extends Component {
     public function deleteUserDuties(DutyTypeEnum $type): void
     {
         $this->dialog()
-            ->question('Warning!', 'Are you sure?')
-            ->confirm(method: 'destroyUserDuties', params: $type->value)
-            ->cancel('Cancel')
+            ->question('Figyelmeztetés!', 'Biztosan törölni szeretnéd a felhasználó szolgálati idejét?')
+            ->confirm('Törlés', method: 'destroyUserDuties', params: $type->value)
+            ->cancel('Mégse')
             ->send();
     }
 
@@ -186,9 +186,9 @@ class extends Component {
     public function deleteDuties(DutyTypeEnum $type): void
     {
         $this->dialog()
-            ->question('Warning!', 'Are you sure?')
-            ->confirm(method: 'destroyDuties', params: $type->value)
-            ->cancel('Mégsem')
+            ->question('Figyelmeztetés!', 'Biztosan törölni szeretnéd az összes szolgálati időt?')
+            ->confirm('Törlés', method: 'destroyDuties', params: $type->value)
+            ->cancel('Mégse')
             ->send();
     }
 
@@ -361,8 +361,8 @@ class extends Component {
     {
         $this->dialog()
             ->question('Figyelmeztetés!', 'Biztosan véglegesen törölni szeretnéd?')
-            ->confirm(method: 'destroyUser')
-            ->cancel()
+            ->confirm('Törlés', method: 'destroyUser')
+            ->cancel('Mégse')
             ->send();
     }
 
