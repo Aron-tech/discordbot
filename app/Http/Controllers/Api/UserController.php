@@ -53,6 +53,16 @@ class UserController
         return response()->json(['message' => 'A felhasználó sikeresen fel lett véve.'], 200);
     }
 
+    public function getUsers(Guild $guild): JsonResponse
+    {
+        $users = $guild->users()->get();
+
+        return response()->json([
+            'message' => 'Sikeresen lekérdezted a felhasználókat',
+            'users' => $users,
+        ], 200);
+    }
+
     public function getUser(Guild $guild, User $user): JsonResponse
     {
 

@@ -27,6 +27,7 @@ Route::middleware([CheckApiKeyMiddleware::class, HandleModelNotFoundMiddleware::
 
         Route::prefix('/users')->group(function () {
             Route::post('/', [UserController::class, 'addUser']);
+            Route::get('/', [UserController::class, 'getUsers']);
             Route::get('/expired', [GuildController::class, 'getExpiredUserStates']);
             Route::post('/expired', [GuildController::class, 'updateExpiredUserStates']);
             Route::get('/{user}', [UserController::class, 'getUser']);
