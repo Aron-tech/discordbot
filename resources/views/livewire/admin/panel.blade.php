@@ -508,7 +508,7 @@ class extends Component {
     </x-card>
     <x-table :$headers :$rows filter loading paginate striped :$sort :quantity="[10,20,50]">
         @interact('column_action', $row)
-        <x-button.circle color="indigo" icon="wrench-screwdriver" wire:click="openModal('{{ $row['discord_id'] }}')"/>
+            <x-button.circle color="indigo" icon="wrench-screwdriver" wire:click="openModal('{{ $row['discord_id'] }}')"/>
         @endinteract
     </x-table>
 
