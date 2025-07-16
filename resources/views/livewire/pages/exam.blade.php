@@ -71,7 +71,7 @@ class extends Component {
 
         $this->questions = $this->getQuestionsWithAnswers();
 
-        $this->question_count = count($this->questions);
+        $this->question_count = $this->selected_exam->q_number;
 
         $this->current_question_index = 0;
 
