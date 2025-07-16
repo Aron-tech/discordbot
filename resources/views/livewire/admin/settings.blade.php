@@ -33,13 +33,15 @@ class extends Component {
     public ?string $duty_room = null;
     public ?string $log_channel = null;
     public ?string $duty_log = null;
+    public ?string $active_num_channel = null;
+    public ?string $warn_channel = null;
+    public ?string $holiday_channel = null;
+
 
     public ?int $min_rankup_time = 0;
     public ?int $min_rankup_duty = 0;
     public ?int $min_duty_time = 0;
     public ?int $warn_time = 0;
-
-    public ?string $active_num_channel = null;
 
     public ?Guild $guild;
 
@@ -84,6 +86,8 @@ class extends Component {
             ChannelTypeEnum::DUTY->value => $this->duty_room,
             ChannelTypeEnum::ACTIVE_NUM->value => $this->active_num_channel,
             ChannelTypeEnum::DUTY_LOG->value => $this->duty_log,
+            ChannelTypeEnum::WARN->value => $this->warn_channel,
+            ChannelTypeEnum::HOLIDAY->value => $this->holiday_channel,
         ];
         $this->guild->save();
 
@@ -155,6 +159,8 @@ class extends Component {
         $this->duty_room = getChannelValue($this->guild, ChannelTypeEnum::DUTY->value);
         $this->duty_log = getChannelValue($this->guild, ChannelTypeEnum::DUTY_LOG->value);
         $this->active_num_channel = getChannelValue($this->guild, ChannelTypeEnum::ACTIVE_NUM->value);
+        $this->warn_channel = getChannelValue($this->guild, ChannelTypeEnum::WARN->value);
+        $this->holiday_channel = getChannelValue($this->guild, ChannelTypeEnum::HOLIDAY->value);
 
         $this->min_rankup_duty = getSettingValue($this->guild, SettingTypeEnum::MIN_RANK_UP_DUTY->value);
         $this->min_rankup_time = getSettingValue($this->guild, SettingTypeEnum::MIN_RANK_UP_TIME->value);
@@ -249,6 +255,20 @@ class extends Component {
                 <x-tooltip text="A csatorna neve a szolgálatban lévők létszáma lesz."/>
             </x-slot:header>
             <x-select.styled wire:model="active_num_channel" :options="$this->channels" searchable/>
+        </x-card>
+        <x-card>
+            <x-slot:header>
+                Figyelmeztetés szoba
+                <x-tooltip text="Ebbe a csatornába küldi be a figyelemztetéseket."/>
+            </x-slot:header>
+            <x-select.styled wire:model="warn_channel" :options="$this->channels" searchable/>
+        </x-card>
+        <x-card>
+            <x-slot:header>
+                Szabadság szoba
+                <x-tooltip text="Ebbe a csatornába küldi be a szabadságokat."/>
+            </x-slot:header>
+            <x-select.styled wire:model="holiday_channel" :options="$this->channels" searchable/>
         </x-card>
     </div>
     <div class="flex justify-end mt-4 lg:mt-8">

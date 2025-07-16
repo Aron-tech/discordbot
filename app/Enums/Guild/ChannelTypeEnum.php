@@ -11,13 +11,19 @@ enum ChannelTypeEnum: string
 
     case ACTIVE_NUM = 'active_num';
 
+    case WARN = 'warn';
+
+    case HOLIDAY = 'holiday';
+
     public function getLabel(): string
     {
         return match ($this) {
             self::DEFAULT_LOG => 'Alapértelmezett Log',
-            self::DUTY_LOG => 'Szolgálati Log',
-            self::DUTY => 'Szolgálati szoba',
-            self::ACTIVE_NUM => 'Szolgálatban lévők számát megjelenítő szoba',
+            self::DUTY_LOG => 'Duty Log szoba',
+            self::DUTY => 'Duty szoba',
+            self::ACTIVE_NUM => 'Aktív szám szoba',
+            self::WARN => 'Figyelmeztetés szoba',
+            self::HOLIDAY => 'Szabadság szoba',
         };
     }
 }
