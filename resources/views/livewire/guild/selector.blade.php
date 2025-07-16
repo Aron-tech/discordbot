@@ -39,21 +39,27 @@ class extends Component {
 
     public function loadGuilds()
     {
-        $this->guilds = $user_guilds = Http::withHeaders([
+        $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . auth()->user()->d_token,
-        ])->get('https://discord.com/api/users/@me/guilds')->json();
+        ])->get('https://discord.com/api/users/@me/guilds');
 
-        $bot_guild_ids = Guild::pluck('guild_id')->toArray();
+       if($response->successful()){
+           $this->guilds = $user_guilds = $response->json();
 
-        $this->bot_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
-            return in_array($guild['id'], $bot_guild_ids);
-        })->values()->toArray();
+           $bot_guild_ids = Guild::pluck('guild_id')->toArray();
 
-        $this->user_owner_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
-            $has_manage_guild = ($guild['permissions'] & 0x20) === 0x20;
+           $this->bot_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
+               return in_array($guild['id'], $bot_guild_ids);
+           })->values()->toArray();
 
-            return ($guild['owner'] === true || $has_manage_guild) && !in_array($guild['id'], $bot_guild_ids);
-        })->values()->toArray();
+           $this->user_owner_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
+               $has_manage_guild = ($guild['permissions'] & 0x20) === 0x20;
+
+               return ($guild['owner'] === true || $has_manage_guild) && !in_array($guild['id'], $bot_guild_ids);
+           })->values()->toArray();
+       }else{
+           to_route('guild.selector');
+       }
     }
 
     public function sendInfo()
