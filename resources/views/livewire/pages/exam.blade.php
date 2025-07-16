@@ -103,6 +103,12 @@ class extends Component {
         $this->nextQuestion();
     }
 
+    #[On('startTimer')]
+    public function startTimer(int $minutes): void
+    {
+        $this->dispatch('startQuestionTimer', minutes: $minutes);
+    }
+
     public function mount(): void
     {
         $this->guild = GuildSelector::getGuild();
@@ -138,7 +144,12 @@ class extends Component {
                     $correct_answer_indexes[] = $answer_index;
             }
 
-            if ($correct_answer_indexes === array_keys($this->user_answers[$question_index])) {
+            $user_answer_keys = [];
+            if (isset($this->user_answers[$question_index]) && is_array($this->user_answers[$question_index])) {
+                $user_answer_keys = array_keys($this->user_answers[$question_index]);
+            }
+
+            if ($correct_answer_indexes === $user_answer_keys) {
                 $score += 1;
             }
         }
