@@ -377,7 +377,7 @@ class extends Component {
                         <x-input label="Vizsga neve" wire:model.live.debounce="exam_name"/>
                         <x-number label="Feltett kérdések száma" max="256" wire:model.live.debounce="q_number"/>
                         <x-number label="Minimum pontszám" max="256" wire:model.live.debounce="min_pass_score"/>
-                        <x-input readonly label="Összes pontszám" :value="$selected_exam->q_number"/>
+                        <x-input readonly label="Összes pontszám" wire:model="q_number"/>
                         <x-number label="M. Prbálkozások száma" max="256" wire:model.live.debounce="attempt_count"/>
                         <x-number label="Egy feladatra jutó idő (percben)" max="256" wire:model.live.debounce="minute_per_task"/>
                         <x-select.styled wire:model="role_whitelist" :options="$this->roles" multiple searchable/>
