@@ -27,6 +27,8 @@ class extends Component {
     public ?array $ic_roles = [];
     public ?array $warn_roles = [];
 
+    public ?array $custom_roles = [];
+
     public ?string $duty_role = null;
     public ?string $freedom_role = null;
 
@@ -107,6 +109,7 @@ class extends Component {
             RoleTypeEnum::WARN_ROLES->value => $this->warn_roles,
             RoleTypeEnum::DUTY_ROLE->value => $this->duty_role,
             RoleTypeEnum::FREEDOM_ROLE->value => $this->freedom_role,
+            RoleTypeEnum::CUSTOM_ROLES->value => $this->custom_roles,
         ];
         $this->guild->save();
 
@@ -161,6 +164,7 @@ class extends Component {
         $this->active_num_channel = getChannelValue($this->guild, ChannelTypeEnum::ACTIVE_NUM->value);
         $this->warn_channel = getChannelValue($this->guild, ChannelTypeEnum::WARN->value);
         $this->holiday_channel = getChannelValue($this->guild, ChannelTypeEnum::HOLIDAY->value);
+        $this->custom_roles = getRoleValue($this->guild, RoleTypeEnum::CUSTOM_ROLES->value);
 
         $this->min_rankup_duty = getSettingValue($this->guild, SettingTypeEnum::MIN_RANK_UP_DUTY->value);
         $this->min_rankup_time = getSettingValue($this->guild, SettingTypeEnum::MIN_RANK_UP_TIME->value);
@@ -219,6 +223,14 @@ class extends Component {
                     text="Ezt a rangot fogja a bot rátenni arra a felhasználóra, aki szabadságot vesz ki. (Ameddig ez a rang van az illetőn nem tudja az alap parancsokat használni)"/>
             </x-slot:header>
             <x-select.styled wire:model="freedom_role" :options="$this->roles" searchable/>
+        </x-card>
+        <x-card>
+            <x-slot:header>
+                Rangok az egyedi rang parancshoz
+                <x-tooltip
+                    text="Te döntöd el, hogy a parancs használatakor mely rangokat tegye a felhasználóra. A parancs törli a felhasználó összes rangját és ezeket fogja rátenni."/>
+            </x-slot:header>
+            <x-select.styled wire:model="custom_roles" :options="$this->roles" multiple searchable/>
         </x-card>
     </div>
 

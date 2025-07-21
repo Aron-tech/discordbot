@@ -10,6 +10,8 @@ enum RoleTypeEnum: string
     case IC_ROLES = 'ic_roles';
     case WARN_ROLES = 'warn_roles';
 
+    case CUSTOM_ROLES = 'custom_roles';
+
     case DUTY_ROLE = 'duty_role';
 
     case FREEDOM_ROLE = 'freedom_role';
