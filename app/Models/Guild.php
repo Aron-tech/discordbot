@@ -57,4 +57,9 @@ class Guild extends Model
     {
         return $this->hasMany(Blacklist::class);
     }
+
+    public function blacklistsWithTrashed(): HasMany
+    {
+        return $this->hasMany(Blacklist::class)->withTrashed();
+    }
 }

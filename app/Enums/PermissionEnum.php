@@ -7,6 +7,11 @@ enum PermissionEnum: string
     case VIEW_ACTIVE_DUTY = 'view_active_duty';
     case VIEW_YOUR_STATS = 'view_your_stats';
     case VIEW_STATS = 'view_stats';
+
+    case VIEW_BLACKLIST = 'view_blacklist';
+
+    case ADD_BLACKLIST = 'add_blacklist';
+    case DELETE_BLACKLIST = 'delete_blacklist';
     case VIEW_ADMIN_PANEL = 'view_admin_panel';
     case VIEW_EXAM_MANAGER = 'view_exam_manager';
 

@@ -31,6 +31,7 @@ class extends Component {
     public ?int $add_period_duty_time = 0;
     public ?string $total_duty_time = null;
     public ?int $add_total_duty_time = 0;
+    public ?string $blacklist_reason = null;
 
     public ?string $selected_user_role = null;
     public array $ic_roles = [];
@@ -535,6 +536,36 @@ class extends Component {
         $this->updatedAddPeriodDutyTime();
     }
 
+    public function confirmBlackList()
+    {
+        $this->dialog()
+            ->question('Figyelmeztetés!', 'Biztosan feketelistára szeretnéd tenni a felhasználót? (A felhasználó automatikusan törlésre kerül a rendszerből.)')
+            ->confirm('Feketelistára tétel', method: 'addBlackList')
+            ->cancel('Mégse')
+            ->send();
+    }
+
+    public function addBlackList()
+    {
+        if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::ADD_BLACKLIST])) {
+            $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod a felhasználó feketelistára tételéhez.')->send();
+            return;
+        }
+
+        $validated = $this->validate([
+            'blacklist_reason' => 'required|string|max:255|min:3',
+        ]);
+
+        $this->selected_user->blacklists()->create([
+            'reason' => $validated['blacklist_reason'],
+            'guild_guild_id' => $this->guild->guild_id,
+        ]);
+
+        $this->destroyUser();
+
+        $this->toast()->success('Sikeres művelet', 'A felhasználó sikeresen feketelistára került.')->send();
+    }
+
     public function with(): array
     {
         return [
@@ -651,6 +682,13 @@ class extends Component {
                 </div>
                 <div class="flex justify-end mt-2 lg:mt-4">
                     <x-button icon="bookmark" wire:click="updateUserIcData()"/>
+                </div>
+            </x-card>
+            <x-card header="Feketelistára tétel" minimize="mount">
+                <x-textarea label="Indok" wire:model="blacklist_reason">
+                </x-textarea>
+                <div class="flex justify-end mt-2 lg:mt-4">
+                    <x-button icon="flag" wire:click="confirmBlackList" text="Feketelistára tétel" color="red"/>
                 </div>
             </x-card>
             <div class="flex flex-col lg:flex-row gap-2 justify-center">
