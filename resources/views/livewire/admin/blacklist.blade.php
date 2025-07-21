@@ -5,6 +5,7 @@ use App\Models\BlackList;
 use App\Models\Guild;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Livewire\Volt\Component;
 use Livewire\Attributes\{Layout, Title, On};
 use Livewire\WithPagination;
@@ -25,6 +26,9 @@ class extends Component {
     public ?string $search = null;
 
     public ?Guild $guild = null;
+
+    public ?string $blacklist_reason = null;
+    public ?string $blacklist_discord_id = null;
 
     public function mount(): void
     {
@@ -53,7 +57,7 @@ class extends Component {
                 ->confirm('Törlés', method: 'destroyBlacklist', params: [$blacklist_id])
                 ->cancel('Mégsem')
                 ->send();
-        }else{
+        } else {
             $blacklist->delete();
             $this->toast()->success('Sikeres művelet', 'Sikeresen törölted a feketelistát.')->send();
         }
@@ -64,6 +68,43 @@ class extends Component {
         $blacklist = $this->guild->blacklistsWithTrashed()->where('id', $blacklist_id)->forceDelete();
 
         $this->toast()->success('Sikeres művelet', 'Sikeresen törölted a feketelistát.')->send();
+    }
+
+    public function addBlacklist(): void
+    {
+        if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::ADD_BLACKLIST])) {
+            $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod a feketelistához hozzáadni.')->send();
+            return;
+        }
+        $validated = $this->validate([
+            'blacklist_discord_id' => [
+                'required',
+                'string',
+                'min:5',
+                Rule::exists('users', 'discord_id'),
+            ],
+            'blacklist_reason' => [
+                'required',
+                'string',
+                'min:3',
+            ],
+        ]);
+
+        if (!$validated['blacklist_discord_id'] || !$validated['blacklist_reason']) {
+            $this->toast()->warning('Hiányzó adatok', 'Kérlek, add meg a Discord ID-t és az indokot.')->send();
+            return;
+        }
+
+        BlackList::create([
+            'user_discord_id' => $validated['blacklist_discord_id'],
+            'reason' => $validated['blacklist_reason'],
+            'guild_guild_id' => $this->guild->guild_id,
+        ]);
+
+        $this->blacklist_discord_id = null;
+        $this->blacklist_reason = null;
+
+        $this->toast()->success('Sikeres művelet', 'Sikeresen hozzáadtad a feketelistához.')->send();
     }
 
 
@@ -94,7 +135,16 @@ class extends Component {
 
 }; ?>
 
-<div>
+<div class="flex flex-col gap-4">
+    <x-card header="Feketelistához adás" minimize="mount">
+        <div class="flex flex-col gap-4">
+            <x-input label="Discord ID" wire:model="blacklist_discord_id" clearable/>
+            <x-textarea label="Indok" wire:model="blacklist_reason">
+
+            </x-textarea>
+            <x-button color="black" icon="flag" wire:click="addBlacklist">Hozzáadás</x-button>
+        </div>
+    </x-card>
     <x-table :$headers :$rows filter loading>
         @interact('column_action', $row)
         <x-button.circle color="red" icon="trash" wire:click="deleteBlacklist('{{ $row->id }}')"/>
