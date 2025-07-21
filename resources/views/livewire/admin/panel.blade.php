@@ -40,6 +40,7 @@ class extends Component {
     public ?string $ic_tel = null;
 
     public ?User $selected_user = null;
+    public ?array $selected_user_member_data = null;
 
     public ?int $quantity = 20;
 
@@ -51,7 +52,7 @@ class extends Component {
         'direction' => 'desc',
     ];
 
-    public function mount()
+    public function mount(): void
     {
         $this->guild = GuildSelector::getGuild();
 
@@ -74,7 +75,7 @@ class extends Component {
             ->toArray();
     }
 
-    public function updatedAddPeriodDutyTime()
+    public function updatedAddPeriodDutyTime(): void
     {
         $addMinutes = $this->safeCastToInt($this->add_period_duty_time);
         $this->period_duty_time = dutyTimeFormatter(
@@ -228,8 +229,7 @@ class extends Component {
                 return;
             }
 
-            $member_data = getMemberData($this->guild->guild_id, $this->selected_user->discord_id);
-            $previous_roles = array_intersect($member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
+            $previous_roles = array_intersect($this->selected_user_member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
             $previous_role = reset($previous_roles) ?: null;
 
             if ($previous_role === $this->selected_user_role) {
@@ -237,7 +237,7 @@ class extends Component {
                 return;
             }
 
-            $new_roles = array_diff($member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
+            $new_roles = array_diff($this->selected_user_member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
             $new_roles[] = $this->selected_user_role;
 
             $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, $new_roles);
@@ -255,6 +255,56 @@ class extends Component {
         } catch (\Exception $e) {
             $this->toast()->error('Hiba történt', $e->getMessage())->send();
             logger()->error('Rang módosítási hiba: ' . $e->getMessage());
+        }
+    }
+
+    public function promoteUserRole(): void
+    {
+        try {
+            if (!$this->selected_user || !$this->selected_user_role) {
+                $this->toast()->warning('Hiányzó adatok', 'Válaszd ki a felhasználót és a rangot!')->send();
+                return;
+            }
+
+            if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::EDIT_USER_IC_ROLES])) {
+                $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod az aktuális szolgálati idők szerkesztéséhez.')->send();
+                return;
+            }
+
+            $current_roles = array_intersect($this->selected_user_member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
+
+            if (empty($current_roles)) {
+                $this->toast()->warning('Nincs rang', 'A felhasználónak nincs IC rangja.')->send();
+                return;
+            }
+
+            $current_role_index = array_search($this->selected_user_role, $current_roles);
+
+            if ($current_role_index === false || $current_role_index === count($current_roles) - 1) {
+                $this->toast()->info('Max rang', 'A felhasználó már a legmagasabb IC rangon van.')->send();
+                return;
+            }
+
+            $new_roles = array_diff($this->selected_user_member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
+            $new_roles[] = $current_roles[$current_role_index + 1];
+
+            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
+
+            if ($response->successful()) {
+                $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
+                    'last_role_time' => now(),
+                ]);
+
+                $this->toast()->success('Sikeres rangemelés',
+                    "A felhasználó most a(z) {$new_roles[count($new_roles) - 1]} rangot viseli!"
+                )->send();
+            } else {
+                throw new \Exception("Discord API hiba: " . $response->body());
+            }
+
+        } catch (\Exception $e) {
+            $this->toast()->error('Hiba történt', $e->getMessage())->send();
+            logger()->error('Rang emelési hiba: ' . $e->getMessage());
         }
     }
 
@@ -277,8 +327,7 @@ class extends Component {
                 throw new \Exception("Nincsenek warn rangok konfigurálva");
             }
 
-            $member_data = getMemberData($this->guild->guild_id, $this->selected_user->discord_id);
-            $current_warns = array_intersect($member_data['roles'], $warn_roles);
+            $current_warns = array_intersect($this->selected_user_member_data['roles'], $warn_roles);
 
             $current_max_level = 0;
             foreach ($current_warns as $role_id) {
@@ -295,7 +344,7 @@ class extends Component {
                 return;
             }
 
-            $new_roles = array_diff($member_data['roles'], $warn_roles);
+            $new_roles = array_diff($this->selected_user_member_data['roles'], $warn_roles);
             $new_roles[] = $warn_roles[$next_level - 1];
 
             $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
@@ -335,9 +384,8 @@ class extends Component {
             if (empty($warn_roles)) {
                 throw new \Exception("Nincsenek warn rangok konfigurálva");
             }
-            $member_data = getMemberData($this->guild->guild_id, $this->selected_user->discord_id);
 
-            $new_roles = array_diff($member_data['roles'], $warn_roles);
+            $new_roles = array_diff($this->selected_user_member_data['roles'], $warn_roles);
 
             $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
 
@@ -414,10 +462,10 @@ class extends Component {
     {
         $this->selected_user = $this->guild->users()->where('user_discord_id', $user_discord_id)->first();
 
-        $member_data = getMemberData($this->guild->guild_id, $this->selected_user->discord_id);
+        $this->selected_user_member_data = getMemberData($this->guild->guild_id, $this->selected_user->discord_id);
 
-        if(isset($member_data['roles'])){
-            $matched = array_intersect($member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
+        if(isset($this->selected_user_member_data['roles'])){
+            $matched = array_intersect($this->selected_user_member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
             $this->selected_user_role = reset($matched) ?: null;
         }
 
@@ -534,6 +582,10 @@ class extends Component {
                 <x-card header="Rang szerkesztése" minimize>
                     <x-select.styled wire:change="updateUserRole" :options="$this->ic_roles" wire:model="selected_user_role"
                                      searchable/>
+                    <div class="flex gap-4 justify-end">
+                        <x-button icon="bars-arrow-up" color="green" wire:click="promoteUserRole" class="mt-2"/>
+                        <x-button icon="bars-arrow-down" color="red" wire:click="demoteUserRole" class="mt-2"/>
+                    </div>
                 </x-card>
             @endif
             <x-card header="IC adatok szerkesztése" minimize="mount">
