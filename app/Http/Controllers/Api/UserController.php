@@ -33,7 +33,7 @@ class UserController
             return response()->json([
                 'message' => 'A felhasználó jelenleg feketelistán van.',
                 'reason' => $blacklist->reason ?? 'Nincsen indok',
-            ], 400);
+            ], 403);
         }
 
         $existing = $guild->users()->where('user_discord_id', $user->discord_id)->exists();
