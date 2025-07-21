@@ -19,7 +19,7 @@ class BlackListController extends Controller
             return response()->json([
                 'message' => 'A felhasználó feketelistán van.',
                 'reason' => $blacklist->reason
-            ], 200);
+            ], 409);
         }
 
         return response()->json(['message' => 'A felhasználó nincsen feketelistán.'], 200);
