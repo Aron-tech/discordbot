@@ -78,7 +78,15 @@ class extends Component {
                 ['index' => 'deleted_at', 'label' => 'Törölve', 'type' => 'boolean'],
                 ['index' => 'action']
             ],
-            'rows' => $this->guild->blacklistsWithTrashed()->with('user')
+            'rows' => $this->guild->blacklistsWithTrashed()
+                ->with('user')
+                ->when($this->search, function (Builder $query) {
+                    $query->where(function ($q) {
+                        $q->whereHas('user', function ($userQuery) {
+                            $userQuery->where('name', 'like', "%{$this->search}%");
+                        })->orWhere('user_discord_id', 'like', "%{$this->search}%");
+                    });
+                })
                 ->paginate($this->quantity)
                 ->withQueryString()
         ];
