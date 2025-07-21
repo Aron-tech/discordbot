@@ -271,22 +271,23 @@ class extends Component {
                 return;
             }
 
-            $current_roles = array_intersect($this->selected_user_member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
+            $ic_roles = getRoleValue($this->guild, 'ic_roles');
 
-            if (empty($current_roles)) {
-                $this->toast()->warning('Nincs rang', 'A felhasználónak nincs IC rangja.')->send();
-                return;
-            }
+            $current_role_index = array_search($this->selected_user_role, $ic_roles);
 
-            $current_role_index = array_search($this->selected_user_role, $current_roles);
-
-            if ($current_role_index === false || $current_role_index === count($current_roles) - 1) {
+            if ($current_role_index === false || $current_role_index === count($ic_roles) - 1) {
                 $this->toast()->info('Max rang', 'A felhasználó már a legmagasabb IC rangon van.')->send();
                 return;
             }
 
-            $new_roles = array_diff($this->selected_user_member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
-            $new_roles[] = $current_roles[$current_role_index + 1];
+            $next_role = $ic_roles[$current_role_index + 1];
+
+            $new_roles = array_diff($this->selected_user_member_data['roles'], $ic_roles);
+            $new_roles[] = $next_role;
+
+            $role_name = $this->ic_roles[array_search($next_role, array_column($this->ic_roles, 'value'))]['label'] ?? 'ismeretlen';
+
+            $this->selected_user_role = $next_role;
 
             $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
 
@@ -296,7 +297,7 @@ class extends Component {
                 ]);
 
                 $this->toast()->success('Sikeres rangemelés',
-                    "A felhasználó most a(z) {$new_roles[count($new_roles) - 1]} rangot viseli!"
+                    "A felhasználó most a(z) {$role_name} rangot viseli!"
                 )->send();
             } else {
                 throw new \Exception("Discord API hiba: " . $response->body());
@@ -305,6 +306,60 @@ class extends Component {
         } catch (\Exception $e) {
             $this->toast()->error('Hiba történt', $e->getMessage())->send();
             logger()->error('Rang emelési hiba: ' . $e->getMessage());
+        }
+    }
+
+    public function demoteUserRole(): void
+    {
+        try {
+            if (!$this->selected_user || !$this->selected_user_role) {
+                $this->toast()->warning('Hiányzó adatok', 'Válaszd ki a felhasználót és a rangot!')->send();
+                return;
+            }
+
+            if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::EDIT_USER_IC_ROLES])) {
+                $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod az aktuális szolgálati idők szerkesztéséhez.')->send();
+                return;
+            }
+
+            $ic_roles = getRoleValue($this->guild, 'ic_roles');
+
+            $current_role_index = array_search($this->selected_user_role, $ic_roles);
+
+            if ($current_role_index === false || $current_role_index === 0) {
+                $this->toast()->info('Mimimum rang', 'A felhasználó már a legalacsonyabb IC rangon van.')->send();
+                return;
+            }
+
+            $next_role = $ic_roles[$current_role_index - 1];
+
+            $new_roles = array_diff($this->selected_user_member_data['roles'], $ic_roles);
+            $new_roles[] = $next_role;
+
+            $new_roles = array_diff($this->selected_user_member_data['roles'], $ic_roles);
+            $new_roles[] = $next_role;
+
+            $role_name = $this->ic_roles[array_search($next_role, array_column($this->ic_roles, 'value'))]['label'] ?? 'ismeretlen';
+
+            $this->selected_user_role = $next_role;
+
+            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
+
+            if ($response->successful()) {
+                $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
+                    'last_role_time' => now(),
+                ]);
+
+                $this->toast()->success('Sikeres rangemelés',
+                    "A felhasználó most a(z) {$role_name} rangot viseli!"
+                )->send();
+            } else {
+                throw new \Exception("Discord API hiba: " . $response->body());
+            }
+
+        } catch (\Exception $e) {
+            $this->toast()->error('Hiba történt', $e->getMessage())->send();
+            logger()->error('Rang csökkentési hiba: ' . $e->getMessage());
         }
     }
 
