@@ -19,7 +19,7 @@ class BlackListController extends Controller
             return response()->json([
                 'message' => 'A felhasználó feketelistán van.',
                 'reason' => $blacklist->reason
-            ], 409);
+            ], 200);
         }
 
         return response()->json(['message' => 'A felhasználó nincsen feketelistán.'], 200);
@@ -43,7 +43,7 @@ class BlackListController extends Controller
         $exits = $user->blacklists()->where('guild_guild_id', $guild->guild_id)->exists();
 
         if ($exits) {
-            return response()->json(['message' => 'A felhasználó már a feketelistán van.'], 400);
+            return response()->json(['message' => 'A felhasználó már a feketelistán van.'], 200);
         }
 
         $user->blacklists()->create([
@@ -51,7 +51,7 @@ class BlackListController extends Controller
             'reason' => $validated['reason'] ?? 'Nincsen indok',
         ]);
 
-        return response()->json(['message' => 'A felhasználó blacklistre tétele sikeresen megtörtént.'], 200);
+        return response()->json(['message' => 'A felhasználó blacklistre tétele sikeresen megtörtént.'], 201);
     }
 
     public function removeBlackList(Guild $guild, User $user)
