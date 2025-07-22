@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\Guild\SettingTypeEnum;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,15 +17,17 @@ new
 class extends Component {
     public ?Guild $guild = null;
     public array $dutyHoursData = [];
-
     public array $area_data = [];
+    public array $user_activity_data = [];
+    public array $duty_distribution_data = [];
 
     public function mount(): void
     {
         $this->guild = GuildSelector::getGuild();
 
         $this->getDiagramData();
-
+        $this->getUserActivityData();
+        $this->getDutyDistributionData();
     }
 
     protected function getData(int $days = 30): Collection
@@ -38,13 +41,31 @@ class extends Component {
             ->get();
     }
 
+    protected function getActiveUsersCount(): ?int
+    {
+        return $this->guild->users()
+            ->whereHas('duties', function ($query) {
+                $query->where('created_at', '>=', Carbon::now()->subDays(getSettingValue($this->guild, SettingTypeEnum::WARN_TIME->value)))
+                    ->where('guild_guild_id', $this->guild->guild_id);
+            })->count();
+    }
+
+    protected function getInactiveUsersCount(): ?int
+    {
+        return $this->guild->users()
+            ->whereDoesntHave('duties', function ($query) {
+                $query->where('created_at', '>=', Carbon::now()->subDays(getSettingValue($this->guild, SettingTypeEnum::WARN_TIME->value)))
+                    ->where('guild_guild_id', $this->guild->guild_id);
+            })->count();
+    }
+
     protected function getUsersWithDuties(): Collection
     {
         return $this->guild->users()->withSum('duties', 'value')
-                ->whereHas('duties', function ($query) {
-                    $query->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->whereHas('duties', function ($query) {
+                $query->where('created_at', '>=', Carbon::now()->subDays(7))
                     ->where('guild_guild_id', $this->guild->guild_id);
-                })
+            })
             ->get();
     }
 
@@ -57,9 +78,57 @@ class extends Component {
         foreach ($data as $item) {
             $this->area_data[] = [
                 'day' => Carbon::parse($item->day)->format('M d'),
-                'minutes' => (int) $item->total_minutes,
-                'users' => (int) $item->unique_users,
+                'minutes' => (int)$item->total_minutes,
+                'users' => (int)$item->unique_users,
             ];
+        }
+    }
+
+    protected function getUserActivityData(): void
+    {
+        $active = $this->getActiveUsersCount() ?? 0;
+        $inactive = $this->getInactiveUsersCount() ?? 0;
+
+        $this->user_activity_data = [
+            ['label' => 'Aktív felhasználók', 'value' => $active],
+            ['label' => 'Inaktív felhasználók', 'value' => $inactive]
+        ];
+    }
+
+    protected function getDutyDistributionData(): void
+    {
+        $usersWithDuties = $this->getUsersWithDuties();
+
+        $categories = [
+            '1-5 óra' => 0,
+            '6-11 óra' => 0,
+            '12-21 óra' => 0,
+            '22+ óra' => 0
+        ];
+
+        foreach ($usersWithDuties as $user) {
+            $totalMinutes = $user->duties_sum_value ?? 0;
+            $totalHours = $totalMinutes / 60;
+
+            if ($totalHours < 6) {
+                $categories['1-5 óra']++;
+            } elseif ($totalHours < 12) {
+                $categories['6-11 óra']++;
+            } elseif ($totalHours < 22) {
+                $categories['12-21 óra']++;
+            } else {
+                $categories['22+ óra']++;
+            }
+        }
+
+        $this->duty_distribution_data = [];
+        foreach ($categories as $label => $value) {
+            if ($value > 0) {
+                $this->duty_distribution_data[] = [
+                    'label' => $label,
+                    'value' => $value
+                ];
+            }
         }
     }
 };
@@ -71,9 +140,23 @@ class extends Component {
         <div id="dutyAreaChart" class="col-span-2 h-[400px]" wire:ignore></div>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h3 class="text-lg font-semibold mb-4 text-center text-gray-900 dark:text-white">Felhasználói Aktivitás</h3>
+            <div id="userActivityChart" class="h-[300px]" wire:ignore></div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h3 class="text-lg font-semibold mb-4 text-center text-gray-900 dark:text-white">Szolgálati Idő Eloszlás (7 nap)</h3>
+            <div id="dutyDistributionChart" class="h-[300px]" wire:ignore></div>
+        </div>
+    </div>
+
     @script
     <script>
-        let chart;
+        let areaChart;
+        let activityChart;
+        let distributionChart;
 
         // Sötét mód detektálása (figyeli mind a rendszer beállítást, mind a Tailwind dark osztályt)
         function isDarkMode() {
@@ -89,12 +172,13 @@ class extends Component {
                 axisColor: dark ? '#6B7280' : '#9CA3AF',
                 bgColor: 'transparent',
                 seriesColors: dark ? ['#3B82F6', '#10B981'] : ['#000000', '#6B7280'],
-                tooltipText: dark ? 'text-gray-100' : 'text-white'
+                tooltipText: dark ? 'text-gray-100' : 'text-white',
+                donutColors: dark ? ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'] : ['#1E40AF', '#DC2626', '#059669', '#D97706', '#7C3AED']
             };
         }
 
-        // Diagram opciók
-        function getChartOptions(dutyData) {
+        // Area diagram opciók
+        function getAreaChartOptions(dutyData) {
             const filteredData = dutyData.filter(item => item.minutes > 0);
             if (filteredData.length === 0) return null;
 
@@ -109,8 +193,8 @@ class extends Component {
                     type: 'area',
                     height: Math.min(400, window.innerHeight - 200),
                     width: Math.min(1360, window.innerWidth - 50),
-                    zoom: { enabled: true },
-                    toolbar: { show: true },
+                    zoom: {enabled: true},
+                    toolbar: {show: true},
                     foreColor: theme.textColor,
                     background: theme.bgColor,
                 },
@@ -176,21 +260,23 @@ class extends Component {
                 tooltip: {
                     theme: isDarkMode() ? 'dark' : 'light',
                     shared: true,
-                    custom: function({ series, dataPointIndex}) {
+                    custom: function ({series, dataPointIndex}) {
                         const label = labels[dataPointIndex];
                         const minutes = series[0][dataPointIndex];
                         const users = series[1][dataPointIndex];
                         const hours = Math.floor(minutes / 60);
                         const mins = minutes % 60;
-                        const theme = getChartTheme();
 
                         return `
-                            <div class="p-2 ${theme.tooltipBg} ${theme.tooltipText} border-b border-gray-600">
+                            <div class="p-2 border-b border-gray-600">
                                 ${label}
                             </div>
-                            <div class="p-2 ${theme.tooltipBg} ${theme.tooltipText}">
-                                ⏱️ ${hours} óra ${mins} perc<br>
-                                👥 ${users} felhasználó
+                            <div class="p-2">
+                                ${(typeof hours === 'number' || typeof mins === 'number')
+                            ? `⏱️ ${hours ?? 0} óra ${mins ?? 0} perc<br>`
+                            : ''
+                        }
+                                ${typeof users === 'number' ? `👥 ${users} felhasználó` : ''}
                             </div>
                         `;
                     }
@@ -226,34 +312,162 @@ class extends Component {
             };
         }
 
+        // Donut diagram alapbeállítások
+        function getDonutChartOptions(data, title) {
+            const theme = getChartTheme();
+
+            if (!data || data.length === 0) return null;
+
+            return {
+                chart: {
+                    type: 'donut',
+                    height: 300,
+                    foreColor: theme.textColor,
+                    background: 'transparent',
+                },
+                series: data.map(item => item.value),
+                labels: data.map(item => item.label),
+                colors: theme.donutColors,
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '60%',
+                            labels: {
+                                show: true,
+                                total: {
+                                    show: true,
+                                    showAlways: true,
+                                    label: 'Összesen',
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    color: theme.textColor,
+                                    formatter: function (w) {
+                                        return w.globals.seriesTotals.reduce((a, b) => {
+                                            return a + b;
+                                        }, 0);
+                                    }
+                                },
+                                value: {
+                                    show: true,
+                                    fontSize: '24px',
+                                    fontWeight: 'bold',
+                                    color: theme.textColor,
+                                }
+                            }
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val, opts) {
+                        return Math.round(val) + '%';
+                    },
+                    style: {
+                        fontSize: '12px',
+                        colors: ['#fff']
+                    }
+                },
+                tooltip: {
+                    theme: isDarkMode() ? 'dark' : 'light',
+                    y: {
+                        formatter: function(val) {
+                            return val + ' fő';
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    horizontalAlign: 'center',
+                    labels: {
+                        colors: theme.textColor
+                    }
+                },
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: {
+                            height: 250
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }]
+            };
+        }
+
         // Téma frissítése
-        function updateChartTheme() {
-            if (chart) {
-                const options = getChartOptions(@json($area_data));
-                if (options) {
-                    chart.updateOptions(options);
+        function updateChartThemes() {
+            if (areaChart) {
+                const areaOptions = getAreaChartOptions(@json($area_data));
+                if (areaOptions) {
+                    areaChart.updateOptions(areaOptions);
+                }
+            }
+
+            if (activityChart) {
+                const activityOptions = getDonutChartOptions(@json($user_activity_data), 'Felhasználói Aktivitás');
+                if (activityOptions) {
+                    activityChart.updateOptions(activityOptions);
+                }
+            }
+
+            if (distributionChart) {
+                const distributionOptions = getDonutChartOptions(@json($duty_distribution_data), 'Szolgálati Idő Eloszlás');
+                if (distributionOptions) {
+                    distributionChart.updateOptions(distributionOptions);
                 }
             }
         }
 
-        // Diagram renderelése
-        function renderChart(dutyData) {
-            if (chart) chart.destroy();
+        // Area diagram renderelése
+        function renderAreaChart(dutyData) {
+            if (areaChart) areaChart.destroy();
 
-            const options = getChartOptions(dutyData);
+            const options = getAreaChartOptions(dutyData);
             if (!options) {
                 document.getElementById('dutyAreaChart').innerHTML =
                     '<div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">Nincs megjeleníthető adat</div>';
                 return;
             }
 
-            chart = new ApexCharts(document.querySelector("#dutyAreaChart"), options);
-            chart.render();
+            areaChart = new ApexCharts(document.querySelector("#dutyAreaChart"), options);
+            areaChart.render();
+        }
+
+        // Aktivitás diagram renderelése
+        function renderActivityChart(data) {
+            if (activityChart) activityChart.destroy();
+
+            const options = getDonutChartOptions(data, 'Felhasználói Aktivitás');
+            if (!options) {
+                document.getElementById('userActivityChart').innerHTML =
+                    '<div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">Nincs megjeleníthető adat</div>';
+                return;
+            }
+
+            activityChart = new ApexCharts(document.querySelector("#userActivityChart"), options);
+            activityChart.render();
+        }
+
+        // Eloszlás diagram renderelése
+        function renderDistributionChart(data) {
+            if (distributionChart) distributionChart.destroy();
+
+            const options = getDonutChartOptions(data, 'Szolgálati Idő Eloszlás');
+            if (!options) {
+                document.getElementById('dutyDistributionChart').innerHTML =
+                    '<div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">Nincs megjeleníthető adat</div>';
+                return;
+            }
+
+            distributionChart = new ApexCharts(document.querySelector("#dutyDistributionChart"), options);
+            distributionChart.render();
         }
 
         // Sötét mód változás figyelése
         const darkModeObserver = new MutationObserver(() => {
-            updateChartTheme();
+            updateChartThemes();
         });
 
         darkModeObserver.observe(document.documentElement, {
@@ -262,12 +476,14 @@ class extends Component {
         });
 
         // Kezdeti renderelés
-        renderChart(@json($area_data));
+        renderAreaChart(@json($area_data));
+        renderActivityChart(@json($user_activity_data));
+        renderDistributionChart(@json($duty_distribution_data));
 
         // Ablak átméretezés kezelése
-        window.addEventListener('resize', function() {
-            if (chart) {
-                chart.updateOptions({
+        window.addEventListener('resize', function () {
+            if (areaChart) {
+                areaChart.updateOptions({
                     chart: {
                         height: Math.min(400, window.innerHeight - 200),
                         width: Math.min(1360, window.innerWidth - 50)
