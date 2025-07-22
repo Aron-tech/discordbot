@@ -26,7 +26,7 @@ class extends Component {
         $this->getDiagramData();
     }
 
-    protected function getData(int $days = 90): Collection
+    protected function getData(int $days = 30): Collection
     {
         return $this->guild->dutiesWithTrashed()
             ->selectRaw('DATE(created_at) as day, SUM(value) as total_minutes, COUNT(DISTINCT user_discord_id) as unique_users')
