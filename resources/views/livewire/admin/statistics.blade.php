@@ -24,6 +24,7 @@ class extends Component {
         $this->guild = GuildSelector::getGuild();
 
         $this->getDiagramData();
+
     }
 
     protected function getData(int $days = 30): Collection
@@ -41,7 +42,8 @@ class extends Component {
     {
         return $this->guild->users()->withSum('duties', 'value')
                 ->whereHas('duties', function ($query) {
-                    $query->where('created_at', '>=', Carbon::now()->subDays(7));
+                    $query->where('created_at', '>=', Carbon::now()->subDays(7))
+                    ->where('guild_guild_id', $this->guild->guild_id);
                 })
             ->get();
     }
@@ -174,7 +176,7 @@ class extends Component {
                 tooltip: {
                     theme: isDarkMode() ? 'dark' : 'light',
                     shared: true,
-                    custom: function({ series, dataPointIndex, w }) {
+                    custom: function({ series, dataPointIndex}) {
                         const label = labels[dataPointIndex];
                         const minutes = series[0][dataPointIndex];
                         const users = series[1][dataPointIndex];
