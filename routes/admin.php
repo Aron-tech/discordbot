@@ -5,7 +5,7 @@ use Livewire\Volt\Volt;
 
 Route::prefix('admin/')->name('admin.')->group(function () {
 
-    // Volt::route('statistics', 'admin.statistics')->name('statistics');
+    Volt::route('statistics', 'admin.statistics')->name('statistics');
 
     Volt::route('settings', 'admin.settings')->name('settings')->middleware('check.permission:view_settings');
 
