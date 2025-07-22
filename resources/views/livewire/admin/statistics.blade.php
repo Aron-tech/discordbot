@@ -19,7 +19,7 @@ class extends Component {
 
     public array $area_data = [];
 
-    public function mount()
+    public function mount(): void
     {
         $this->guild = GuildSelector::getGuild();
 
