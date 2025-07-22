@@ -26,7 +26,7 @@ class extends Component {
         $this->getDiagramData();
     }
 
-    protected function getData(int $days = 30): Collection
+    protected function getData(int $days = 45): Collection
     {
         return $this->guild->dutiesWithTrashed()
             ->selectRaw('DATE(created_at) as day, SUM(value) as total_minutes, COUNT(DISTINCT user_discord_id) as unique_users')
@@ -34,6 +34,15 @@ class extends Component {
             ->whereNotNull('value')
             ->groupBy('day')
             ->orderBy('day', 'asc')
+            ->get();
+    }
+
+    protected function getUsersWithDuties(): Collection
+    {
+        return $this->guild->users()->withSum('duties', 'value')
+                ->whereHas('duties', function ($query) {
+                    $query->where('created_at', '>=', Carbon::now()->subDays(7));
+                })
             ->get();
     }
 
