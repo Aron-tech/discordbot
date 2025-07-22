@@ -59,6 +59,11 @@ class extends Component {
             })->count();
     }
 
+    protected function getUsersCount(): ?int
+    {
+        return $this->guild->users()->count();
+    }
+
     protected function getUsersWithDuties(): Collection
     {
         return $this->guild->users()->withSum('duties', 'value')
@@ -99,25 +104,37 @@ class extends Component {
     {
         $usersWithDuties = $this->getUsersWithDuties();
 
+        // Kategorizáljuk a felhasználókat szolgálati idő alapján
         $categories = [
-            '1-5 óra' => 0,
-            '6-11 óra' => 0,
-            '12-21 óra' => 0,
-            '22+ óra' => 0
+            '0-5 óra' => 0,
+            '5-10 óra' => 0,
+            '10-20 óra' => 0,
+            '20+ óra' => 0
         ];
+
+        $userDetails = []; // Felhasználók részleteinek tárolása
 
         foreach ($usersWithDuties as $user) {
             $totalMinutes = $user->duties_sum_value ?? 0;
             $totalHours = $totalMinutes / 60;
 
-            if ($totalHours < 6) {
-                $categories['1-5 óra']++;
-            } elseif ($totalHours < 12) {
-                $categories['6-11 óra']++;
-            } elseif ($totalHours < 22) {
-                $categories['12-21 óra']++;
+            // Formázott idő számítása
+            $hours = floor($totalMinutes / 60);
+            $minutes = $totalMinutes % 60;
+            $formattedTime = sprintf('%d:%02d', $hours, $minutes);
+
+            if ($totalHours < 5) {
+                $categories['0-5 óra']++;
+                $userDetails['0-5 óra'][] = ['name' => $user->name ?? 'Ismeretlen', 'time' => $formattedTime];
+            } elseif ($totalHours < 10) {
+                $categories['5-10 óra']++;
+                $userDetails['5-10 óra'][] = ['name' => $user->name ?? 'Ismeretlen', 'time' => $formattedTime];
+            } elseif ($totalHours < 20) {
+                $categories['10-20 óra']++;
+                $userDetails['10-20 óra'][] = ['name' => $user->name ?? 'Ismeretlen', 'time' => $formattedTime];
             } else {
-                $categories['22+ óra']++;
+                $categories['20+ óra']++;
+                $userDetails['20+ óra'][] = ['name' => $user->name ?? 'Ismeretlen', 'time' => $formattedTime];
             }
         }
 
@@ -126,7 +143,8 @@ class extends Component {
             if ($value > 0) {
                 $this->duty_distribution_data[] = [
                     'label' => $label,
-                    'value' => $value
+                    'value' => $value,
+                    'users' => $userDetails[$label] ?? []
                 ];
             }
         }
@@ -460,6 +478,29 @@ class extends Component {
                     '<div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">Nincs megjeleníthető adat</div>';
                 return;
             }
+
+            // Speciális tooltip a szolgálati idő eloszláshoz - felhasználók nevével és idővel
+            options.tooltip = {
+                theme: isDarkMode() ? 'dark' : 'light',
+                custom: function({series, seriesIndex, dataPointIndex, w}) {
+                    const categoryData = data[seriesIndex];
+                    const users = categoryData.users || [];
+                    const count = series[seriesIndex];
+
+                    let userList = '';
+                    if (users.length > 0) {
+                        userList = users.map(user => `<div style="margin: 2px 0;">${user.name}: ${user.time}</div>`).join('');
+                    }
+
+                    return `
+                        <div style="padding: 8px; min-width: 200px;">
+                            <div style="font-weight: bold; margin-bottom: 4px;">${categoryData.label}</div>
+                            <div style="margin-bottom: 4px;">${count} fő</div>
+                            ${userList ? `<div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 4px; max-height: 150px; overflow-y: auto;">${userList}</div>` : ''}
+                        </div>
+                    `;
+                }
+            };
 
             distributionChart = new ApexCharts(document.querySelector("#dutyDistributionChart"), options);
             distributionChart.render();
