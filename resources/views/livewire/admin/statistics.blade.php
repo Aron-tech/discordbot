@@ -104,50 +104,31 @@ class extends Component {
     {
         $usersWithDuties = $this->getUsersWithDuties();
 
-        // Kategorizáljuk a felhasználókat szolgálati idő alapján
-        $categories = [
-            '0-5 óra' => 0,
-            '5-10 óra' => 0,
-            '10-20 óra' => 0,
-            '20+ óra' => 0
-        ];
-
-        $userDetails = []; // Felhasználók részleteinek tárolása
+        $this->duty_distribution_data = [];
 
         foreach ($usersWithDuties as $user) {
             $totalMinutes = $user->duties_sum_value ?? 0;
-            $totalHours = $totalMinutes / 60;
 
-            // Formázott idő számítása
-            $hours = floor($totalMinutes / 60);
-            $minutes = $totalMinutes % 60;
-            $formattedTime = sprintf('%d:%02d', $hours, $minutes);
+            if ($totalMinutes > 0) {
+                // Formázott idő számítása óra:perc formátumban
+                $hours = floor($totalMinutes / 60);
+                $minutes = $totalMinutes % 60;
+                $formattedTime = sprintf('%d:%02d', $hours, $minutes);
 
-            if ($totalHours < 5) {
-                $categories['0-5 óra']++;
-                $userDetails['0-5 óra'][] = ['name' => $user->name ?? 'Ismeretlen', 'time' => $formattedTime];
-            } elseif ($totalHours < 10) {
-                $categories['5-10 óra']++;
-                $userDetails['5-10 óra'][] = ['name' => $user->name ?? 'Ismeretlen', 'time' => $formattedTime];
-            } elseif ($totalHours < 20) {
-                $categories['10-20 óra']++;
-                $userDetails['10-20 óra'][] = ['name' => $user->name ?? 'Ismeretlen', 'time' => $formattedTime];
-            } else {
-                $categories['20+ óra']++;
-                $userDetails['20+ óra'][] = ['name' => $user->name ?? 'Ismeretlen', 'time' => $formattedTime];
-            }
-        }
-
-        $this->duty_distribution_data = [];
-        foreach ($categories as $label => $value) {
-            if ($value > 0) {
                 $this->duty_distribution_data[] = [
-                    'label' => $label,
-                    'value' => $value,
-                    'users' => $userDetails[$label] ?? []
+                    'label' => ($user->name ?? 'Ismeretlen') . ' (' . $formattedTime . ')',
+                    'value' => $totalMinutes, // Itt percekben tároljuk, hogy az arányok stimmeljenek
+                    'user_name' => $user->name ?? 'Ismeretlen',
+                    'formatted_time' => $formattedTime,
+                    'minutes' => $totalMinutes
                 ];
             }
         }
+
+        // Rendezzük csökkenő sorrendbe a szolgálati idő alapján
+        usort($this->duty_distribution_data, function($a, $b) {
+            return $b['value'] - $a['value'];
+        });
     }
 };
 ?>
@@ -389,7 +370,14 @@ class extends Component {
                     theme: isDarkMode() ? 'dark' : 'light',
                     y: {
                         formatter: function(val) {
-                            return val + ' fő';
+                            // Ellenőrizzük, hogy melyik diagram típusról van szó
+                            if (title === 'Szolgálati Idő Eloszlás') {
+                                const hours = Math.floor(val / 60);
+                                const minutes = val % 60;
+                                return `${hours}:${minutes.toString().padStart(2, '0')}`;
+                            } else {
+                                return val + ' fő';
+                            }
                         }
                     }
                 },
@@ -469,6 +457,7 @@ class extends Component {
         }
 
         // Eloszlás diagram renderelése
+        // Eloszlás diagram renderelése
         function renderDistributionChart(data) {
             if (distributionChart) distributionChart.destroy();
 
@@ -479,24 +468,67 @@ class extends Component {
                 return;
             }
 
-            // Speciális tooltip a szolgálati idő eloszláshoz - felhasználók nevével és idővel
+            // Speciális dataLabels formázás a szolgálati idő eloszláshoz
+            options.dataLabels = {
+                enabled: true,
+                formatter: function (val, opts) {
+                    // Az eredeti percek értéke a data tömb seriesIndex alapján
+                    const totalMinutes = data[opts.seriesIndex].minutes;
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    return `${hours}:${minutes.toString().padStart(2, '0')}`;
+                },
+                style: {
+                    fontSize: '12px',
+                    colors: ['#fff']
+                }
+            };
+
+            // Speciális plotOptions a szolgálati idő eloszláshoz
+            options.plotOptions = {
+                pie: {
+                    donut: {
+                        size: '60%',
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                showAlways: true,
+                                label: 'Összesen',
+                                fontSize: '16px',
+                                fontWeight: 600,
+                                color: options.chart.foreColor,
+                                formatter: function (w) {
+                                    const totalMinutes = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                                    const hours = Math.floor(totalMinutes / 60);
+                                    const minutes = totalMinutes % 60;
+                                    return `${hours}:${minutes.toString().padStart(2, '0')}`;
+                                }
+                            },
+                            value: {
+                                show: true,
+                                fontSize: '24px',
+                                fontWeight: 'bold',
+                                color: options.chart.foreColor,
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Speciális tooltip a szolgálati idő eloszláshoz
             options.tooltip = {
                 theme: isDarkMode() ? 'dark' : 'light',
                 custom: function({series, seriesIndex, dataPointIndex, w}) {
-                    const categoryData = data[seriesIndex];
-                    const users = categoryData.users || [];
-                    const count = series[seriesIndex];
-
-                    let userList = '';
-                    if (users.length > 0) {
-                        userList = users.map(user => `<div style="margin: 2px 0;">${user.name}: ${user.time}</div>`).join('');
-                    }
+                    const userData = data[seriesIndex];
+                    const totalMinutes = userData.minutes;
+                    const percentage = ((totalMinutes / series.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
 
                     return `
-                        <div style="padding: 8px; min-width: 200px;">
-                            <div style="font-weight: bold; margin-bottom: 4px;">${categoryData.label}</div>
-                            <div style="margin-bottom: 4px;">${count} fő</div>
-                            ${userList ? `<div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 4px; max-height: 150px; overflow-y: auto;">${userList}</div>` : ''}
+                        <div style="padding: 8px;">
+                            <div style="font-weight: bold; margin-bottom: 4px;">${userData.user_name}</div>
+                            <div>Idő: ${userData.formatted_time}</div>
+                            <div>Arány: ${percentage}%</div>
                         </div>
                     `;
                 }
