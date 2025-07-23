@@ -34,8 +34,9 @@ class extends Component {
     {
         return dd( $this->guild->dutiesWithTrashed()
             ->selectRaw('DATE(created_at) as day, SUM(value) as total_minutes, COUNT(DISTINCT user_discord_id) as unique_users')
-            ->where('created_at', '>=', Carbon::now()->subDays($days))
             ->whereNotNull('value')
+            ->whereNotNull('end_time')
+            ->where('end_time', '>=', Carbon::now()->subDays($days))
             ->groupBy('day')
             ->orderBy('day', 'asc')
             ->get());
