@@ -25,7 +25,7 @@ class extends Component {
     {
         $this->guild = GuildSelector::getGuild();
 
-        $this->getDiagramData();
+        dd($this->getDiagramData());
         $this->getUserActivityData();
         $this->getDutyDistributionData();
     }
@@ -59,16 +59,11 @@ class extends Component {
             })->count();
     }
 
-    protected function getUsersCount(): ?int
-    {
-        return $this->guild->users()->count();
-    }
-
     protected function getUsersWithDuties(): Collection
     {
         return $this->guild->users()->withSum('duties', 'value')
             ->whereHas('duties', function ($query) {
-                $query->where('created_at', '>=', Carbon::now()->subDays(7))
+                $query->where('created_at', '>=', Carbon::now()->subDays(getSettingValue($this->guild, SettingTypeEnum::WARN_TIME->value)))
                     ->where('guild_guild_id', $this->guild->guild_id);
             })
             ->get();
@@ -146,7 +141,7 @@ class extends Component {
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <h3 class="text-lg font-semibold mb-4 text-center text-gray-900 dark:text-white">Szolgálati Idő Eloszlás (7 nap)</h3>
+            <h3 class="text-lg font-semibold mb-4 text-center text-gray-900 dark:text-white">Szolgálati Idő Eloszlás ({{getSettingValue($guild, SettingTypeEnum::WARN_TIME->value)}} nap)</h3>
             <div id="dutyDistributionChart" class="h-[300px]" wire:ignore></div>
         </div>
     </div>
@@ -455,82 +450,104 @@ class extends Component {
             activityChart = new ApexCharts(document.querySelector("#userActivityChart"), options);
             activityChart.render();
         }
-
-        // Eloszlás diagram renderelése
-        // Eloszlás diagram renderelése
         function renderDistributionChart(data) {
             if (distributionChart) distributionChart.destroy();
 
-            const options = getDonutChartOptions(data, 'Szolgálati Idő Eloszlás');
-            if (!options) {
+            // Szűrjük ki a 0 értékű bejegyzéseket és rendezzük csökkenő sorrendbe
+            const filteredData = data.filter(item => item.value > 0)
+                .sort((a, b) => b.value - a.value);
+
+            if (filteredData.length === 0) {
                 document.getElementById('dutyDistributionChart').innerHTML =
                     '<div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">Nincs megjeleníthető adat</div>';
                 return;
             }
 
-            // Speciális dataLabels formázás a szolgálati idő eloszláshoz
-            options.dataLabels = {
-                enabled: true,
-                formatter: function (val, opts) {
-                    // Az eredeti percek értéke a data tömb seriesIndex alapján
-                    const totalMinutes = data[opts.seriesIndex].minutes;
-                    const hours = Math.floor(totalMinutes / 60);
-                    const minutes = totalMinutes % 60;
-                    return `${hours}:${minutes.toString().padStart(2, '0')}`;
-                },
-                style: {
-                    fontSize: '12px',
-                    colors: ['#fff']
-                }
-            };
+            const theme = getChartTheme();
 
-            // Speciális plotOptions a szolgálati idő eloszláshoz
-            options.plotOptions = {
-                pie: {
-                    donut: {
-                        size: '60%',
-                        labels: {
-                            show: true,
-                            total: {
+            // Összes perc kiszámolása az arányokhoz
+            const totalMinutes = filteredData.reduce((sum, item) => sum + item.value, 0);
+
+            const options = {
+                chart: {
+                    type: 'donut',
+                    height: 300,
+                    foreColor: theme.textColor,
+                    background: 'transparent',
+                },
+                series: filteredData.map(item => item.value),
+                labels: filteredData.map(item => {
+                    const percentage = ((item.value / totalMinutes) * 100).toFixed(1);
+                    return `${item.user_name} (${percentage}%)`;
+                }),
+                colors: theme.donutColors,
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '60%',
+                            labels: {
                                 show: true,
-                                showAlways: true,
-                                label: 'Összesen',
-                                fontSize: '16px',
-                                fontWeight: 600,
-                                color: options.chart.foreColor,
-                                formatter: function (w) {
-                                    const totalMinutes = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                                    const hours = Math.floor(totalMinutes / 60);
-                                    const minutes = totalMinutes % 60;
-                                    return `${hours}:${minutes.toString().padStart(2, '0')}`;
+                                total: {
+                                    show: true,
+                                    showAlways: true,
+                                    label: 'Összes idő',
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    color: theme.textColor,
+                                    formatter: function () {
+                                        const hours = Math.floor(totalMinutes / 60);
+                                        const minutes = totalMinutes % 60;
+                                        return `${hours}ó ${minutes}p`;
+                                    }
+                                },
+                                value: {
+                                    show: true,
+                                    fontSize: '24px',
+                                    fontWeight: 'bold',
+                                    color: theme.textColor,
                                 }
-                            },
-                            value: {
-                                show: true,
-                                fontSize: '24px',
-                                fontWeight: 'bold',
-                                color: options.chart.foreColor,
                             }
                         }
                     }
-                }
-            };
-
-            // Speciális tooltip a szolgálati idő eloszláshoz
-            options.tooltip = {
-                theme: isDarkMode() ? 'dark' : 'light',
-                custom: function({series, seriesIndex, dataPointIndex, w}) {
-                    const userData = data[seriesIndex];
-                    const totalMinutes = userData.minutes;
-                    const percentage = ((totalMinutes / series.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
-
-                    return `
-                        <div style="padding: 8px;">
-                            <div style="font-weight: bold; margin-bottom: 4px;">${userData.user_name}</div>
-                            <div>Idő: ${userData.formatted_time}</div>
-                            <div>Arány: ${percentage}%</div>
-                        </div>
-                    `;
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val, opts) {
+                        const minutes = filteredData[opts.seriesIndex].value;
+                        const hours = Math.floor(minutes / 60);
+                        const mins = minutes % 60;
+                        return `${hours}:${mins.toString().padStart(2, '0')}`;
+                    },
+                    style: {
+                        fontSize: '12px',
+                        colors: ['#fff'],
+                        fontFamily: 'monospace'
+                    }
+                },
+                tooltip: {
+                    theme: isDarkMode() ? 'dark' : 'light',
+                    custom: function({series, seriesIndex}) {
+                        const item = filteredData[seriesIndex];
+                        const percentage = ((item.value / totalMinutes) * 100).toFixed(1);
+                        return `
+                            <div class="p-2">
+                                <div class="font-bold">${item.user_name}</div>
+                                <div>Idő: ${item.formatted_time}</div>
+                                <div>Arány: ${percentage}%</div>
+                            </div>
+                        `;
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    horizontalAlign: 'center',
+                    labels: {
+                        colors: theme.textColor,
+                        useSeriesColors: false
+                    },
+                    formatter: function(seriesName, opts) {
+                        return seriesName.split(' (')[0];
+                    }
                 }
             };
 
