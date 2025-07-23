@@ -32,14 +32,14 @@ class extends Component {
 
     protected function getData(int $days = 30): Collection
     {
-        return dd( $this->guild->dutiesWithTrashed()
+        return $this->guild->dutiesWithTrashed()
             ->selectRaw('DATE(end_time) as day, SUM(value) as total_minutes, COUNT(DISTINCT user_discord_id) as unique_users')
             ->whereNotNull('value')
             ->whereNotNull('end_time')
             ->where('end_time', '>=', Carbon::now()->subDays($days))
             ->groupBy('day')
             ->orderBy('day', 'asc')
-            ->get());
+            ->get();
     }
 
     protected function getActiveUsersCount(): ?int
