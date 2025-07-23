@@ -228,7 +228,7 @@ class extends Component {
             <x-slot:header>
                 Rangok az egyedi rang parancshoz
                 <x-tooltip
-                    text="Te döntöd el, hogy a parancs használatakor mely rangokat tegye a felhasználóra. A parancs törli a felhasználó összes rangját és ezeket fogja rátenni."/>
+                    text="Te döntöd el, hogy a parancs használatakor mely rangokat tegye a felhasználóra. A parancs törli a felhasználó összes rangját és ezeket fogja rátenni ezt csak nem regisztráltokon csinálja meg."/>
             </x-slot:header>
             <x-select.styled wire:model="custom_roles" :options="$this->roles" multiple searchable/>
         </x-card>
