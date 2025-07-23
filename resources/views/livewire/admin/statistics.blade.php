@@ -25,20 +25,20 @@ class extends Component {
     {
         $this->guild = GuildSelector::getGuild();
 
-        dd($this->getDiagramData());
+        $this->getDiagramData();
         $this->getUserActivityData();
         $this->getDutyDistributionData();
     }
 
     protected function getData(int $days = 30): Collection
     {
-        return $this->guild->dutiesWithTrashed()
+        return dd( $this->guild->dutiesWithTrashed()
             ->selectRaw('DATE(created_at) as day, SUM(value) as total_minutes, COUNT(DISTINCT user_discord_id) as unique_users')
             ->where('created_at', '>=', Carbon::now()->subDays($days))
             ->whereNotNull('value')
             ->groupBy('day')
             ->orderBy('day', 'asc')
-            ->get();
+            ->get());
     }
 
     protected function getActiveUsersCount(): ?int
