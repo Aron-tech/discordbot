@@ -142,7 +142,7 @@ class extends Component {
             </div>
             <x-slot:footer>
                 <div class="flex justify-end gap-x-4">
-                    <x-button>Kész</x-button>
+                    <x-button x-on:click="$modalClose('join_dev_guild_modal-id')">Kész</x-button>
                 </div>
             </x-slot:footer>
         </x-card>
