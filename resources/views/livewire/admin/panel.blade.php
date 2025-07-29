@@ -676,9 +676,9 @@ class extends Component {
             @endif
             <x-card header="IC adatok szerkesztése" minimize="mount">
                 <div class="flex flex-col lg:flex-row gap-2">
-                    <x-input wire:model="ic_name" label="Név"/>
-                    <x-input wire:model="ic_number" label="Jelvényszám"/>
-                    <x-input wire:model="ic_tel" label="Telefonszám"/>
+                    <x-input wire:model.lazy="ic_name" label="Név"/>
+                    <x-input wire:model.lazy="ic_number" label="Jelvényszám"/>
+                    <x-input wire:model.lazy="ic_tel" label="Telefonszám"/>
                 </div>
                 <div class="flex justify-end mt-2 lg:mt-4">
                     <x-button icon="bookmark" wire:click="updateUserIcData()"/>

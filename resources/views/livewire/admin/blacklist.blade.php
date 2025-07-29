@@ -138,8 +138,8 @@ class extends Component {
 <div class="flex flex-col gap-4">
     <x-card header="Feketelistához adás" minimize="mount">
         <div class="flex flex-col gap-4">
-            <x-input label="Discord ID" wire:model="blacklist_discord_id" clearable/>
-            <x-textarea label="Indok" wire:model="blacklist_reason">
+            <x-input label="Discord ID" wire:model.lazy="blacklist_discord_id" clearable/>
+            <x-textarea label="Indok" wire:model.lazy="blacklist_reason">
 
             </x-textarea>
             <x-button color="black" icon="flag" wire:click="addBlacklist">Hozzáadás</x-button>

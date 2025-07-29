@@ -191,24 +191,24 @@ class extends Component {
                 Admin rangok
                 <x-tooltip text="Az összes parancsot képes használni."/>
             </x-slot:header>
-            <x-select.styled wire:model="admin_roles" :options="$this->roles" multiple searchable/>
+            <x-select.styled wire:model.lazy="admin_roles" :options="$this->roles" multiple searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
                 Moderátor rangok
                 <x-tooltip text="Dokumentációban tekintsd meg melyik parancsokat képes használni."/>
             </x-slot:header>
-            <x-select.styled wire:model="mod_roles" :options="$this->roles" multiple searchable/>
+            <x-select.styled wire:model.lazy="mod_roles" :options="$this->roles" multiple searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
                 Alap rangok
                 <x-tooltip text="Dokumentációban tekintsd meg melyik parancsokat képes használni."/>
             </x-slot:header>
-            <x-select.styled wire:model="default_roles" :options="$this->roles" multiple searchable/>
+            <x-select.styled wire:model.lazy="default_roles" :options="$this->roles" multiple searchable/>
         </x-card>
         <x-card header="Szolgálati rang">
-            <x-select.styled wire:model="duty_role" :options="$this->roles" searchable/>
+            <x-select.styled wire:model.lazy="duty_role" :options="$this->roles" searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
@@ -216,7 +216,7 @@ class extends Component {
                 <x-tooltip
                     text="Figyelj a sorrendre. A kijelölés sorrendjének meg kell egyeznie a rang up sorrenddel."/>
             </x-slot:header>
-            <x-select.styled wire:model="ic_roles" :options="$this->roles" multiple searchable/>
+            <x-select.styled wire:model.lazy="ic_roles" :options="$this->roles" multiple searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
@@ -224,7 +224,7 @@ class extends Component {
                 <x-tooltip
                     text="Figyelj a sorrendre. A kijelölés sorrendjének meg kell egyeznie a warn szintek sorrenddel."/>
             </x-slot:header>
-            <x-select.styled wire:model="warn_roles" :options="$this->roles" multiple searchable/>
+            <x-select.styled wire:model.lazy="warn_roles" :options="$this->roles" multiple searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
@@ -232,7 +232,7 @@ class extends Component {
                 <x-tooltip
                     text="Ezt a rangot fogja a bot rátenni arra a felhasználóra, aki szabadságot vesz ki. (Ameddig ez a rang van az illetőn nem tudja az alap parancsokat használni)"/>
             </x-slot:header>
-            <x-select.styled wire:model="freedom_role" :options="$this->roles" searchable/>
+            <x-select.styled wire:model.lazy="freedom_role" :options="$this->roles" searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
@@ -240,7 +240,7 @@ class extends Component {
                 <x-tooltip
                     text="Te döntöd el, hogy a parancs használatakor mely rangokat tegye a felhasználóra. A parancs törli a felhasználó összes rangját és ezeket fogja rátenni ezt csak nem regisztráltokon csinálja meg."/>
             </x-slot:header>
-            <x-select.styled wire:model="custom_roles" :options="$this->roles" multiple searchable/>
+            <x-select.styled wire:model.lazy="custom_roles" :options="$this->roles" multiple searchable/>
         </x-card>
     </div>
 
@@ -255,42 +255,42 @@ class extends Component {
                 <x-tooltip
                     text="A bot ide küldi be a kezelőpanelt és itt fogja frissíteni a szolgálatban lévők listáját."/>
             </x-slot:header>
-            <x-select.styled wire:model="duty_room" :options="$this->channels" searchable/>
+            <x-select.styled wire:model.lazy="duty_room" :options="$this->channels" searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
                 Default Log szoba
                 <x-tooltip text="Az összes parancsot képes használni."/>
             </x-slot:header>
-            <x-select.styled wire:model="log_channel" :options="$this->channels" searchable/>
+            <x-select.styled wire:model.lazy="log_channel" :options="$this->channels" searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
                 Duty Log szoba
                 <x-tooltip text="Duty log szoba."/>
             </x-slot:header>
-            <x-select.styled wire:model="duty_log" :options="$this->channels" searchable/>
+            <x-select.styled wire:model.lazy="duty_log" :options="$this->channels" searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
                 Aktív duty létszám szoba
                 <x-tooltip text="A csatorna neve a szolgálatban lévők létszáma lesz."/>
             </x-slot:header>
-            <x-select.styled wire:model="active_num_channel" :options="$this->channels" searchable/>
+            <x-select.styled wire:model.lazy="active_num_channel" :options="$this->channels" searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
                 Figyelmeztetés szoba
                 <x-tooltip text="Ebbe a csatornába küldi be a figyelemztetéseket."/>
             </x-slot:header>
-            <x-select.styled wire:model="warn_channel" :options="$this->channels" searchable/>
+            <x-select.styled wire:model.lazy="warn_channel" :options="$this->channels" searchable/>
         </x-card>
         <x-card>
             <x-slot:header>
                 Szabadság szoba
                 <x-tooltip text="Ebbe a csatornába küldi be a szabadságokat."/>
             </x-slot:header>
-            <x-select.styled wire:model="holiday_channel" :options="$this->channels" searchable/>
+            <x-select.styled wire:model.lazy="holiday_channel" :options="$this->channels" searchable/>
         </x-card>
     </div>
     <div class="flex justify-end mt-4 lg:mt-8">
@@ -304,7 +304,7 @@ class extends Component {
                 <x-tooltip
                     text="Add meg órában, hogy mennyi legyen a minimum szolgálati idő amitől automatikusan magasabb rendfokozatot adjon (Ha nincs megadva a funkció nem elérhető)."/>
             </x-slot:header>
-            <x-number wire:model="min_rankup_duty" step="0.5"/>
+            <x-number wire:model.lazy="min_rankup_duty" step="0.5"/>
         </x-card>
         <x-card>
             <x-slot:header>
@@ -312,7 +312,7 @@ class extends Component {
                 <x-tooltip
                     text="Add meg órában, hogy mennyi legyen a minimmum szolgálati idő ami alatt automatikusan figyelmeztetést adjon (Ha nincs megadva a funkció nem elérhető)."/>
             </x-slot:header>
-            <x-number wire:model="min_duty_time" step="0.5"/>
+            <x-number wire:model.lazy="min_duty_time" step="0.5"/>
         </x-card>
         <x-card>
             <x-slot:header>
@@ -320,7 +320,7 @@ class extends Component {
                 <x-tooltip
                     text="Add meg napban minimum mennyi idő múlva lehet magasabb rendfokozatot adni (Ha nincs megadva akkor a funkció csak a szolgálati időt nézi)."/>
             </x-slot:header>
-            <x-number wire:model="min_rankup_time" step="1"/>
+            <x-number wire:model.lazy="min_rankup_time" step="1"/>
         </x-card>
         <x-card>
             <x-slot:header>
@@ -328,17 +328,20 @@ class extends Component {
                 <x-tooltip
                     text="Add meg napban mennyi idő múlva járjon le a figyelmeztetés (Ha nincs megadva akkor a funkció nem működik)."/>
             </x-slot:header>
-            <x-number wire:model="warn_time" step="1"/>
+            <x-number wire:model.lazy="warn_time" step="1"/>
         </x-card>
-        <x-card>
+        <x-card x-data="{ checkingDutyStatus: {{ $checking_duty_status ? 'true' : 'false' }} }">
             <x-slot:header>
                 Automatikus kiléptető (béta)
                 <x-tooltip
                     text="A felhasználókat automatikusan kilépteti a rendszer, ha szolgálatban maradtak (Nem menti el a szolgálati idejüket)."/>
             </x-slot:header>
             <div class="space-y-4">
-                <x-input label="FiveM szerver ID" wire:model="fivem_server_id" :disabled="!$this->checking_duty_status"/>
-                <x-toggle label="Funkció engedélyezése" wire:model.live="checking_duty_status"/>
+                <x-input label="FiveM szerver ID"
+                         wire:model.lazy="fivem_server_id"
+                         x-bind:disabled="!checkingDutyStatus"/>
+                <x-toggle label="Funkció engedélyezése"
+                          x-model="checkingDutyStatus"/>
             </div>
         </x-card>
     </div>
