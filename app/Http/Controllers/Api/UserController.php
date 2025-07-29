@@ -95,6 +95,7 @@ class UserController
         $pivot = $guild->users()->where('user_discord_id', $user->discord_id)->first()->pivot ?? null;
 
         $guild->users()->updateExistingPivot($user->discord_id, [
+            'name' => $validated['name'] ?? $pivot->name,
             'ic_name' => $validated['ic_name'] ?? $pivot->ic_name,
             'ic_number' => $validated['ic_number'] ?? $pivot->ic_number,
             'ic_tel' => $validated['ic_tel'] ?? $pivot->ic_tel,
