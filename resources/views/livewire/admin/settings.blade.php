@@ -330,7 +330,7 @@ class extends Component {
             </x-slot:header>
             <x-number wire:model.lazy="warn_time" step="1"/>
         </x-card>
-        <x-card x-data="{ checkingDutyStatus: {{ $checking_duty_status ? 'true' : 'false' }} }">
+        <x-card>
             <x-slot:header>
                 Automatikus kiléptető (béta)
                 <x-tooltip
@@ -339,9 +339,9 @@ class extends Component {
             <div class="space-y-4">
                 <x-input label="FiveM szerver ID"
                          wire:model.lazy="fivem_server_id"
-                         x-bind:disabled="!checkingDutyStatus"/>
+                         :disabled="!$checking_duty_status"/>
                 <x-toggle label="Funkció engedélyezése"
-                          x-model="checkingDutyStatus"/>
+                          wire:model.lazy="checking_duty_status"/>
             </div>
         </x-card>
     </div>
