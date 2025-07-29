@@ -27,6 +27,9 @@ class extends Component {
     public ?array $ic_roles = [];
     public ?array $warn_roles = [];
 
+    public bool $checking_duty_status = false;
+    public ?string $fivem_server_id = null;
+
     public ?array $custom_roles = [];
 
     public ?string $duty_role = null;
@@ -122,18 +125,22 @@ class extends Component {
             return $this->dialog()->error('Sikertelen művelet', 'A rendszer nem találja a szervert.')->send();
         }
 
-        $this->validate([
+        $validated = $this->validate([
             'min_rankup_duty' => 'nullable|numeric|min:0',
             'min_rankup_time' => 'nullable|integer|min:0',
             'min_duty_time' => 'nullable|numeric|min:0',
             'warn_time' => 'nullable|integer|min:0',
+            'checking_duty_status' => 'boolean',
+            'fivem_server_id' => $this->checking_duty_status ? 'required|string|max:255' : 'nullable|string|max:255',
         ]);
 
         $this->guild->settings = [
-            SettingTypeEnum::MIN_RANK_UP_DUTY->value => $this->min_rankup_duty,
-            SettingTypeEnum::MIN_RANK_UP_TIME->value => $this->min_rankup_time,
-            SettingTypeEnum::MIN_DUTY->value => $this->min_duty_time,
-            SettingTypeEnum::WARN_TIME->value => $this->warn_time,
+            SettingTypeEnum::MIN_RANK_UP_DUTY->value => $validated['min_rankup_duty'],
+            SettingTypeEnum::MIN_RANK_UP_TIME->value => $validated['min_rankup_time'],
+            SettingTypeEnum::MIN_DUTY->value => $validated['min_duty_time'],
+            SettingTypeEnum::WARN_TIME->value => $validated['warn_time'],
+            SettingTypeEnum::CHECKING_DUTY_STATUS->value => $validated['checking_duty_status'],
+            SettingTypeEnum::FIVEM_SERVER_ID->value => $validated['fivem_server_id'],
         ];
 
         try {
@@ -170,6 +177,9 @@ class extends Component {
         $this->min_rankup_time = getSettingValue($this->guild, SettingTypeEnum::MIN_RANK_UP_TIME->value);
         $this->min_duty_time = getSettingValue($this->guild, SettingTypeEnum::MIN_DUTY->value);
         $this->warn_time = getSettingValue($this->guild, SettingTypeEnum::WARN_TIME->value);
+
+        $this->checking_duty_status = getSettingValue($this->guild, SettingTypeEnum::CHECKING_DUTY_STATUS->value, false);
+        $this->fivem_server_id = getSettingValue($this->guild, SettingTypeEnum::FIVEM_SERVER_ID->value, null);
     }
 }; ?>
 
@@ -319,6 +329,17 @@ class extends Component {
                     text="Add meg napban mennyi idő múlva járjon le a figyelmeztetés (Ha nincs megadva akkor a funkció nem működik)."/>
             </x-slot:header>
             <x-number wire:model="warn_time" step="1"/>
+        </x-card>
+        <x-card>
+            <x-slot:header>
+                Automatikus kiléptető (béta)
+                <x-tooltip
+                    text="A felhasználókat automatikusan kilépteti a rendszer, ha szolgálatban maradtak (Nem menti el a szolgálati idejüket)."/>
+            </x-slot:header>
+            <div class="space-y-4">
+                <x-input label="FiveM szerver ID" wire:model="fivem_server_id" :disabled="!$this->checking_duty_status"/>
+                <x-toggle label="Funkció engedélyezése" wire:model.live="checking_duty_status"/>
+            </div>
         </x-card>
     </div>
     <div class="flex justify-end mt-4 lg:mt-8">

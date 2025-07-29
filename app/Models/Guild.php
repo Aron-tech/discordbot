@@ -32,7 +32,7 @@ class Guild extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'guild_user', 'guild_guild_id', 'user_discord_id')
-            ->withPivot('ic_name', 'ic_number', 'ic_tel', 'last_role_time', 'last_warn_time', 'created_at', 'freedom_expiring');
+            ->withPivot('ic_name', 'ic_number', 'ic_tel', 'last_role_time', 'last_warn_time', 'created_at', 'freedom_expiring', 'name');
     }
 
     public function usersWithOutPivot(): BelongsToMany
