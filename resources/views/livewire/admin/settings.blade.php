@@ -330,7 +330,7 @@ class extends Component {
             </x-slot:header>
             <x-number wire:model.lazy="warn_time" step="1"/>
         </x-card>
-        <x-card>
+        <!--x-card>
             <x-slot:header>
                 Automatikus kiléptető (béta)
                 <x-tooltip
@@ -347,7 +347,7 @@ class extends Component {
     </div>
     <div class="flex justify-end mt-4 lg:mt-8">
         <x-button wire:click="saveSettings" text="Mentés"/>
-    </div>
+    </div-->
 
 </div>
 
