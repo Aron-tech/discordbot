@@ -343,11 +343,11 @@ class extends Component {
                 <x-toggle label="Funkció engedélyezése"
                           wire:model.lazy="checking_duty_status"/>
             </div>
-        </x-card>
+        </x-card-->
     </div>
     <div class="flex justify-end mt-4 lg:mt-8">
         <x-button wire:click="saveSettings" text="Mentés"/>
-    </div-->
+    </div>
 
 </div>
 
