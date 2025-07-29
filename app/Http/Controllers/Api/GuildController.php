@@ -52,9 +52,12 @@ class GuildController extends Controller
         ], 200);
     }
 
-    public function update(GuildRequest $request, Guild $guild): JsonResponse
+    public function update(Request $request, Guild $guild): JsonResponse
     {
-        $validated = $request->validated();
+        $validated = $request->validate([
+            'name' => 'nullable|string|min:3|max:100',
+            'installed' => 'nullable|boolean',
+        ]);
 
         $guild->update([
             'name' => $validated['name'] ?? $guild->name,
