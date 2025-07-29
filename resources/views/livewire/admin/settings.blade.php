@@ -330,20 +330,6 @@ class extends Component {
             </x-slot:header>
             <x-number wire:model.lazy="warn_time" step="1"/>
         </x-card>
-        <!--x-card>
-            <x-slot:header>
-                Automatikus kiléptető (béta)
-                <x-tooltip
-                    text="A felhasználókat automatikusan kilépteti a rendszer, ha szolgálatban maradtak (Nem menti el a szolgálati idejüket)."/>
-            </x-slot:header>
-            <div class="space-y-4">
-                <x-input label="FiveM szerver ID"
-                         wire:model.lazy="fivem_server_id"
-                         :disabled="!$checking_duty_status"/>
-                <x-toggle label="Funkció engedélyezése"
-                          wire:model.lazy="checking_duty_status"/>
-            </div>
-        </x-card-->
     </div>
     <div class="flex justify-end mt-4 lg:mt-8">
         <x-button wire:click="saveSettings" text="Mentés"/>
