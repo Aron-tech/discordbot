@@ -9,7 +9,6 @@ class UpdateUserPivotRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['nullable', 'min:3', 'max:50'],
             'ic_name' => ['nullable', 'min:3', 'max:50'],
             'ic_number' => ['nullable', 'min:2', 'max:4'],
             'ic_tel' => ['nullable', 'min:3', 'max:13'],
