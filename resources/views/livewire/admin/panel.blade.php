@@ -13,7 +13,8 @@ use Livewire\Attributes\{Layout, Title};
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
-
+use App\Http\Requests\UpdateUserPivotLivewireRequest;
+use App\Enums\Guild\RoleTypeEnum;
 
 new
 #[Layout('layouts.app')]
@@ -477,6 +478,37 @@ class extends Component {
             return;
         }
 
+        $member_data = getMemberData($this->guild->guild_id, $this->selected_user->discord_id);
+
+        if ($member_data !== []) {
+
+            if (empty($member_data['roles'])) {
+                $this->toast()->warning('Nincs rang', 'A felhasználónak nincs rangja a Discord szerveren.')->send();
+                return;
+            }
+            $new_roles = array_values($member_data['roles']);
+
+            foreach (RoleTypeEnum::cases() as $role_type) {
+                $role_value = getRoleValue($this->guild, $role_type->value);
+
+                if (is_array($role_value)) {
+                    $new_roles = array_diff($new_roles, $role_value);
+                } elseif (is_string($role_value)) {
+                    $new_roles = array_filter($new_roles, function($item) use ($role_value) {
+                        return $item !== $role_value;
+                    });
+                }
+            }
+
+
+            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, $new_roles);
+
+            if (!$response->successful()) {
+                $this->toast()->error('Hiba történt', 'Nem sikerült eltávolítani a felhasználót a Discord szerverről.')->send();
+                return;
+            }
+        }
+
         $this->guild->users()->detach($this->selected_user->discord_id);
 
         $this->guild->duties()->where('user_discord_id', $this->selected_user->discord_id)->delete();
@@ -493,10 +525,12 @@ class extends Component {
             return;
         }
 
+        $validated = $this->validate((new UpdateUserPivotLivewireRequest())->rules());
+
         $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
-            'ic_name' => $this->ic_name,
-            'ic_number' => $this->ic_number,
-            'ic_tel' => $this->ic_tel,
+            'ic_name' => $validated['ic_name'],
+            'ic_number' => $validated['ic_number'],
+            'ic_tel' => $validated['ic_tel'],
         ]);
 
         $this->toast()->success('Sikeres művelet', 'Sikeresen módosítottad egy felhasználó IC adatait.')->send();
@@ -640,13 +674,14 @@ class extends Component {
                       color="red" icon="trash"/>
         </div>
     </x-card>
+
     <x-table :$headers :$rows filter loading paginate striped :$sort :quantity="[10,20,50]">
         @interact('column_action', $row)
             <x-button.circle color="indigo" icon="wrench-screwdriver" wire:click="openModal('{{ $row['discord_id'] }}')"/>
         @endinteract
     </x-table>
 
-    <x-modal text="Felhasználó kezelése" size="2xl" wire="modal" z-index="z-40">
+    <x-modal title="Felhasználó kezelése" size="2xl" wire="modal" z-index="z-40">
         <div class="flex flex-col gap-4">
             <x-card header="Szolgálati idő szerkesztése" minimize>
                 <div class="flex flex-col lg:flex-row gap-2">
@@ -700,4 +735,10 @@ class extends Component {
             </div>
         </div>
     </x-modal>
+
+    <div class="fixed bottom-5 right-5 z-10">
+        <x-button.circle x-on:click="$modalOpen('add-user-modal')" icon="plus" lg/>
+    </div>
+
+    @livewire('guild.add-user')
 </div>
