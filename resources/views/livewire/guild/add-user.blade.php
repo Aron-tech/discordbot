@@ -65,10 +65,8 @@ new class extends Component {
         try {
             $validated = $this->validate((new UpdateUserPivotLivewireRequest())->rules());
 
-            if (!$this->isValidDcId()) {
-                $this->loading = false;
+            if (!$this->isValidDcId())
                 return;
-            }
 
             $user = User::firstOrCreate(['discord_id' => $this->new_discord_id],
                 [
