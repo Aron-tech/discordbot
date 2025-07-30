@@ -27,9 +27,6 @@ class extends Component {
     public ?array $ic_roles = [];
     public ?array $warn_roles = [];
 
-    public bool $checking_duty_status = false;
-    public ?string $fivem_server_id = null;
-
     public ?array $custom_roles = [];
 
     public ?string $duty_role = null;
@@ -130,8 +127,6 @@ class extends Component {
             'min_rankup_time' => 'nullable|integer|min:0',
             'min_duty_time' => 'nullable|numeric|min:0',
             'warn_time' => 'nullable|integer|min:0',
-            'checking_duty_status' => 'boolean',
-            'fivem_server_id' => $this->checking_duty_status ? 'required|string|max:255' : 'nullable|string|max:255',
         ]);
 
         $this->guild->settings = [
@@ -139,8 +134,6 @@ class extends Component {
             SettingTypeEnum::MIN_RANK_UP_TIME->value => $validated['min_rankup_time'],
             SettingTypeEnum::MIN_DUTY->value => $validated['min_duty_time'],
             SettingTypeEnum::WARN_TIME->value => $validated['warn_time'],
-            SettingTypeEnum::CHECKING_DUTY_STATUS->value => $validated['checking_duty_status'],
-            SettingTypeEnum::FIVEM_SERVER_ID->value => $validated['fivem_server_id'],
         ];
 
         try {
@@ -177,9 +170,6 @@ class extends Component {
         $this->min_rankup_time = getSettingValue($this->guild, SettingTypeEnum::MIN_RANK_UP_TIME->value);
         $this->min_duty_time = getSettingValue($this->guild, SettingTypeEnum::MIN_DUTY->value);
         $this->warn_time = getSettingValue($this->guild, SettingTypeEnum::WARN_TIME->value);
-
-        $this->checking_duty_status = getSettingValue($this->guild, SettingTypeEnum::CHECKING_DUTY_STATUS->value, false);
-        $this->fivem_server_id = getSettingValue($this->guild, SettingTypeEnum::FIVEM_SERVER_ID->value, null);
     }
 }; ?>
 

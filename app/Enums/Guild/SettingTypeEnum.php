@@ -9,8 +9,5 @@ enum SettingTypeEnum: string
 
     case MIN_DUTY = 'min_duty';
     case WARN_TIME = 'warn_time';
-
-    case CHECKING_DUTY_STATUS = 'checking_duty_status';
-    case FIVEM_SERVER_ID = 'fivem_server_id';
 }
 

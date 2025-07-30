@@ -139,29 +139,14 @@ class GuildController extends Controller
     {
         $is_empty_column = false;
 
-        // Gather all settings first
-        $settings = [];
         foreach (SettingTypeEnum::cases() as $setting_type) {
-            $settings[$setting_type->value] = getSettingValue($guild, $setting_type->value);
-        }
-
-        foreach (SettingTypeEnum::cases() as $setting_type) {
-            if ($setting_type === SettingTypeEnum::FIVEM_SERVER_ID) {
-                continue;
-            }
-            if ($setting_type === SettingTypeEnum::CHECKING_DUTY_STATUS) {
-                continue;
-            }
-            if ($settings[$setting_type->value] === null) {
+            $setting_value = getSettingValue($guild, $setting_type->value);
+            if ($setting_value === null) {
                 $is_empty_column = true;
                 break;
             }
         }
 
-        if (! empty($settings[SettingTypeEnum::CHECKING_DUTY_STATUS->value]) &&
-            empty($settings[SettingTypeEnum::FIVEM_SERVER_ID->value])) {
-            $is_empty_column = true;
-        }
 
         foreach (ChannelTypeEnum::cases() as $channel_type) {
             $channel_value = getChannelValue($guild, $channel_type->value);
