@@ -1,7 +1,7 @@
 <?php
 
 use App\Enums\PermissionEnum;
-use App\Livewire\Traits\DevDcChecking;
+use App\Livewire\Traits\DcChecking;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use Livewire\Volt\Component;
@@ -16,7 +16,7 @@ new
 class extends Component {
 
     use Interactions;
-    use DevDcChecking;
+    use DcChecking;
 
     public array $bot_guilds = [];
 
@@ -43,23 +43,23 @@ class extends Component {
             'Authorization' => 'Bearer ' . auth()->user()->d_token,
         ])->get('https://discord.com/api/users/@me/guilds');
 
-       if($response->successful()){
-           $this->guilds = $user_guilds = $response->json();
+        if ($response->successful()) {
+            $this->guilds = $user_guilds = $response->json();
 
-           $bot_guild_ids = Guild::pluck('guild_id')->toArray();
+            $bot_guild_ids = Guild::pluck('guild_id')->toArray();
 
-           $this->bot_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
-               return in_array($guild['id'], $bot_guild_ids);
-           })->values()->toArray();
+            $this->bot_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
+                return in_array($guild['id'], $bot_guild_ids);
+            })->values()->toArray();
 
-           $this->user_owner_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
-               $has_manage_guild = ($guild['permissions'] & 0x20) === 0x20;
+            $this->user_owner_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
+                $has_manage_guild = ($guild['permissions'] & 0x20) === 0x20;
 
-               return ($guild['owner'] === true || $has_manage_guild) && !in_array($guild['id'], $bot_guild_ids);
-           })->values()->toArray();
-       }else{
-           to_route('guild.selector');
-       }
+                return ($guild['owner'] === true || $has_manage_guild) && !in_array($guild['id'], $bot_guild_ids);
+            })->values()->toArray();
+        } else {
+            to_route('guild.selector');
+        }
     }
 
     public function sendInfo()
@@ -78,7 +78,7 @@ class extends Component {
             return $this->dispatch('open-external', url: $external_url);
         }
 
-        if (auth()->user()->can('hasPermission', [$guild, PermissionEnum::EDIT_SETTINGS]) && !$this->isDevMember(auth()->user()->discord_id)){
+        if (auth()->user()->can('hasPermission', [$guild, PermissionEnum::EDIT_SETTINGS]) && !$this->isDevMember(auth()->user()->discord_id)) {
             $this->join_dev_guild_modal = true;
             return;
         }
@@ -136,7 +136,8 @@ class extends Component {
     <x-modal wire="join_dev_guild_modal" persistent>
         <x-card title="Fejlesztői szerver kötelező">
             <x-h4 class="mb-4">Kötelező csatlakozni az adminok számára a bot fejlesztői szerverhez!</x-h4>
-            <p class="mb-4">A fejlesztői szerverre való csatlakozás után tudod csak használni a bot adminisztrációs funkcióit.</p>
+            <p class="mb-4">A fejlesztői szerverre való csatlakozás után tudod csak használni a bot adminisztrációs
+                funkcióit.</p>
             <div class="flex justify-center">
                 <x-button href="https://discord.gg/BYNaz3PR6D" target="_blank">Csatlakozás</x-button>
             </div>
