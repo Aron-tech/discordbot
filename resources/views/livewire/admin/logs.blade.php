@@ -41,8 +41,8 @@ class extends Component {
 
         $this->dialog()
             ->question('Figyelmeztetés!', 'Biztosan véglegesen törölni szeretnéd?')
-            ->confirm(method: 'destroyDuty')
-            ->cancel()
+            ->confirm('Törlés', method: 'destroyDuty')
+            ->cancel('Mégse')
             ->send();
     }
 

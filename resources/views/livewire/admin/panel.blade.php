@@ -594,7 +594,7 @@ class extends Component {
                 ->when($this->search, function (Builder $query) {
                     $query->where(function ($subQuery) {
                         $subQuery->where('discord_id', 'like', "%{$this->search}%")
-                            ->orWhere('name', 'like', "%{$this->search}%")
+                            ->orWhere('users.name', 'like', "%{$this->search}%")
                             ->orWhere('guild_user.ic_name', 'like', "%{$this->search}%")
                             ->orWhere('guild_user.ic_number', 'like', "%{$this->search}%")
                             ->orWhere('guild_user.ic_tel', 'like', "%{$this->search}%")
