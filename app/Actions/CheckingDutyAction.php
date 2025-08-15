@@ -27,7 +27,8 @@ class CheckingDutyAction
         foreach ($users as $user) {
             $user_rank_up = ($user->total_duty_time >= ($min_rank_up_duty * 60) && Carbon::parse($user->pivot->last_role_time)->addDays($min_rank_up_time)->isPast()) && (is_null($user->pivot->last_warn_time) || Carbon::parse($user->pivot->last_warn_time)->addDays($warn_time)->isPast());
             $user_warn = ($user->total_duty_time < ($min_duty * 60)) &&
-                (is_null($user->pivot->freedom_expiring) || Carbon::parse($user->pivot->freedom_expiring)->lt(Carbon::now()->subDays($warn_time)));
+                (is_null($user->pivot->freedom_expiring) || Carbon::parse($user->pivot->freedom_expiring)->lt(Carbon::now()->subDays($warn_time)))
+            && ($user->pivot->created_at->addDays($warn_time)->isPast());
 
             if ($is_executing) {
                 $this->processUserActions($guild, $user, $user_rank_up, $user_warn);
