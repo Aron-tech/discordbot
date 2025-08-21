@@ -378,8 +378,5 @@ class extends Component {
             </div>
         </x-card>
     </div>
-    <div class="flex justify-end mt-4 lg:mt-8">
-        <x-button wire:click="saveSettings" text="Mentés"/>
-    </div>
 </div>
 
