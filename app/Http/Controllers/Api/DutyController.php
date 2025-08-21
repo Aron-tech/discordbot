@@ -66,7 +66,7 @@ class DutyController extends Controller
             ->exists();
 
         if ($exits) {
-            return response()->json(['message' => 'A felhasználó már szolgálatban van.'], 400);
+            return response()->json(['message' => 'A felhasználó már szolgálatban van.'], 409);
         }
 
         $guild->duties()->create([
