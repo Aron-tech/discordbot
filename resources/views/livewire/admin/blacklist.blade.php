@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PermissionEnum;
+use App\Livewire\Traits\DcMessageTrait;
 use App\Models\BlackList;
 use App\Models\Guild;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,7 @@ class extends Component {
 
     use withPagination;
     use Interactions;
+    use DcMessageTrait;
 
     public ?int $quantity = 10;
 
@@ -58,16 +60,30 @@ class extends Component {
                 ->cancel('Mégsem')
                 ->send();
         } else {
+            $blacklisted_user_id = $blacklist->user_discord_id;
             $blacklist->delete();
             $this->toast()->success('Sikeres művelet', 'Sikeresen törölted a feketelistát.')->send();
+            $channel_id = $this->getDutyLogChannelId($this->guild);
+            $this->sendDefaultLog($channel_id, [
+                'message' => "A felhasználó eltávolította <@{$blacklisted_user_id}> felhasználót a feketelistáról.",
+                'user' => auth()->id(),
+            ]);
         }
     }
 
     public function destroyBlacklist($blacklist_id): void
     {
-        $blacklist = $this->guild->blacklistsWithTrashed()->where('id', $blacklist_id)->forceDelete();
+        $blacklist = $this->guild->blacklistsWithTrashed()->where('id', $blacklist_id)->first();
+        $blacklisted_user_id = $blacklist->user_discord_id;
+        $blacklist->forceDelete();
 
         $this->toast()->success('Sikeres művelet', 'Sikeresen törölted a feketelistát.')->send();
+
+        $channel_id = $this->getDutyLogChannelId($this->guild);
+        $this->sendDefaultLog($channel_id, [
+            'message' => "A felhasználó véglegesen törölte <@{$blacklisted_user_id}> felhasználót a feketelistáról.",
+            'user' => auth()->id(),
+        ]);
     }
 
     public function addBlacklist(): void
@@ -101,10 +117,16 @@ class extends Component {
             'guild_guild_id' => $this->guild->guild_id,
         ]);
 
+        $this->toast()->success('Sikeres művelet', 'Sikeresen hozzáadtad a feketelistához.')->send();
+        $channel_id = $this->getDutyLogChannelId($this->guild);
+        $this->sendDefaultLog($channel_id, [
+            'command' => 'blacklistadd',
+            'message' => "A felhasználó hozzáadta <@{$this->blacklist_discord_id}> felhasználót a feketelistához. Indok: {$this->blacklist_reason}",
+            'user' => auth()->id(),
+        ]);
+
         $this->blacklist_discord_id = null;
         $this->blacklist_reason = null;
-
-        $this->toast()->success('Sikeres művelet', 'Sikeresen hozzáadtad a feketelistához.')->send();
     }
 
 

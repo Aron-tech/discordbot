@@ -2,6 +2,7 @@
 
 use App\Enums\Guild\RoleTypeEnum;
 use App\Enums\PermissionEnum;
+use App\Livewire\Traits\DcMessageTrait;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use Carbon\Carbon;
@@ -19,6 +20,7 @@ class extends Component {
 
     use Interactions;
     use WithPagination;
+    use DcMessageTrait;
 
     public ?Guild $guild = null;
     public int $active_duties_count = 0;
@@ -59,8 +61,13 @@ class extends Component {
             $response = changeMemberData($this->guild->guild_id, $duty->user_discord_id, $new_roles);
 
             if ($response->successful()) {
-
                 $this->toast()->success('A felhasználó sikeresen kiléptetve.')->send();
+                $channel_id = $this->getDutyLogChannelId($this->guild);
+                $this->sendDutyLog($channel_id, [
+                    'command' => 'dutyfcancel',
+                    'message' => "A felhasználó kiléptette <@{$duty->user_discord_id}> felhasználót mentés nélkül.",
+                    'user' => auth()->id(),
+                ]);
             } else {
                 $this->toast()->error('Hiba történt a felhasználó kiléptetése közben.')->send();
             }

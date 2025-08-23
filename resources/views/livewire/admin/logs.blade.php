@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Traits\DcMessageTrait;
 use App\Models\Duty;
 use App\Models\Guild;
 use App\Models\GuildSelector;
@@ -16,6 +17,7 @@ new
 class extends Component {
     use WithPagination;
     use Interactions;
+    use DcMessageTrait;
 
     public ?int $quantity = 20;
 
@@ -35,7 +37,7 @@ class extends Component {
         $this->guild = GuildSelector::getGuild();
     }
 
-    public function deleteDuty(int $duty_id)
+    public function deleteDuty(int $duty_id): void
     {
         $this->selected_duty = Duty::withTrashed()->findOrFail($duty_id);
 
@@ -46,13 +48,20 @@ class extends Component {
             ->send();
     }
 
-    public function destroyDuty()
+    public function destroyDuty(): void
     {
+        $user_id = $this->selected_duty->user_discord_id;
+        $minutes = $this->selected_duty->value;
         $this->selected_duty->forceDelete();
 
         $this->selected_duty = null;
 
         $this->toast()->success('Sikeres művelet', 'Sikeresen töröltél egy szolgálati időt.')->send();
+        $channel_id = $this->getDutyLogChannelId($this->guild);
+        $this->sendDefaultLog($channel_id, [
+            'message' => "A felhasználó elvett <@{$user_id}> felhasználó szolgálati idejéből {$minutes} percet.",
+            'user' => auth()->id(),
+        ]);
     }
 
     public function with(): array
@@ -88,7 +97,7 @@ class extends Component {
 <div>
     <x-table :$headers :$rows filter loading paginate striped :$sort :quantity="[10,20,50]">
         @interact('column_action', $row)
-            <x-button.circle color="red" icon="trash" wire:click="deleteDuty('{{ $row->id }}')"/>
+        <x-button.circle color="red" icon="trash" wire:click="deleteDuty('{{ $row->id }}')"/>
         @endinteract
     </x-table>
 </div>

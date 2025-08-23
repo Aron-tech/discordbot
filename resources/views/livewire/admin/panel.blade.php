@@ -15,6 +15,8 @@ use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
 use App\Http\Requests\UpdateUserPivotLivewireRequest;
 use App\Enums\Guild\RoleTypeEnum;
+use App\Livewire\Traits\DcMessageTrait;
+use App\Enums\Guild\ChannelTypeEnum;
 
 new
 #[Layout('layouts.app')]
@@ -24,6 +26,7 @@ class extends Component {
     use Interactions;
     use FormatsDuty;
     use WithPagination;
+    use DcMessageTrait;
 
     public ?Guild $guild = null;
 
@@ -130,8 +133,14 @@ class extends Component {
                 'end_time' => now(),
             ]);
 
-            $this->add_period_duty_time = 0;
             $this->toast()->success('Sikeres művelet', 'Sikeresen hozzáadtál a felhasználó szolgálati idejéhez.')->send();
+            $channel_id = $this->getDutyLogChannelId($this->guild);
+            $this->sendDefaultLog($channel_id, [
+                'command' => 'dutymanager',
+                'message' => "A felhasználó hozzáadott <@{$this->selected_user->discord_id}> felhasználónak az aktuális összes szolgálati idejéhez {$this->add_period_duty_time} percet.",
+                'user' => auth()->id(),
+            ]);
+            $this->add_period_duty_time = 0;
 
         } else if (DutyTypeEnum::TOTAL === $type) {
 
@@ -149,8 +158,13 @@ class extends Component {
 
             $duty->delete();
 
-            $this->add_total_duty_time = 0;
             $this->toast()->success('Sikeres művelet', 'Sikeresen hozzáadtál a felhasználó összes szolgálati idejéhez.')->send();
+            $channel_id = $this->getDutyLogChannelId($this->guild);
+            $this->sendDefaultLog($channel_id, [
+                'message' => "A felhasználó hozzáadott <@{$this->selected_user->discord_id}> felhasználónak az összes szolgálati idejéhez {$this->add_total_duty_time} percet.",
+                'user' => auth()->id(),
+            ]);
+            $this->add_total_duty_time = 0;
         }
     }
 
@@ -174,6 +188,11 @@ class extends Component {
 
             $this->selected_user->duties()->where('guild_guild_id', $this->guild->guild_id)->delete();
             $this->toast()->success('Sikeres művelet', 'Sikeresen törölted a szolgálati idejét a felhasználónak.')->send();
+            $channel_id = $this->getDutyLogChannelId($this->guild);
+            $this->sendDefaultLog($channel_id, [
+                'message' => "A felhasználó törölte az aktuális összes szolgálati időjét <@{$this->selected_user->discord_id}> felhasználónak.",
+                'user' => auth()->id(),
+            ]);
         } else if (DutyTypeEnum::TOTAL->value === $type) {
 
             if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::DELETE_USER_TOTAL_DUTY])) {
@@ -183,6 +202,11 @@ class extends Component {
 
             $this->selected_user->dutiesWithTrashed()->where('guild_guild_id', $this->guild->guild_id)->forceDelete();
             $this->toast()->success('Sikeres művelet', 'Sikeresen törölted az összes szolgálati idejét a felhasználónak.')->send();
+            $channel_id = $this->getDutyLogChannelId($this->guild);
+            $this->sendDefaultLog($channel_id, [
+                'message' => "A felhasználó törölte az összes szolgálati időjét <@{$this->selected_user->discord_id}> felhasználónak.",
+                'user' => auth()->id(),
+            ]);
         }
     }
 
@@ -206,6 +230,11 @@ class extends Component {
 
             $this->guild->duties()->delete();
             $this->toast()->success('Sikeres művelet', 'Sikeresen törölted a szolgálati időt.')->send();
+            $this->sendDefaultLog($channel_id, [
+                'command' => 'dutyreset',
+                'message' => "A felhasználó törölte az aktuális összes szolgálati időt.",
+                'user' => auth()->id(),
+            ]);
         } else if (DutyTypeEnum::TOTAL->value === $type) {
 
             if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::DELETE_TOTAL_DUTY])) {
@@ -215,6 +244,11 @@ class extends Component {
 
             $this->guild->dutiesWithTrashed()->forceDelete();
             $this->toast()->success('Sikeres művelet', 'Sikeresen törölted az összes szolgálati időt.')->send();
+            $this->sendDefaultLog($channel_id, [
+                'command' => 'dutyclear',
+                'message' => "A felhasználó törölte az összes szolgálati időt.",
+                'user' => auth()->id(),
+            ]);
         }
     }
 
@@ -250,6 +284,13 @@ class extends Component {
                 ]);
 
                 $this->toast()->success('Sikeres rangmódosítás', 'A felhasználó rangja frissült a Discord szerveren is.')->send();
+
+                $channel_id = $this->getDefaultLogChannelId($this->guild);
+                $this->sendDefaultLog($channel_id, [
+                    'command' => 'rolemanager',
+                    'message' => "A felhasználó módosította <@{$this->selected_user->discord_id}> felhasználó rangját. Új rangja: <@&{$this->selected_user_role}>",
+                    'user' => auth()->id(),
+                ]);
             } else {
                 throw new \Exception("Discord API hiba: " . $response->body());
             }
@@ -263,6 +304,7 @@ class extends Component {
     public function promoteUserRole(): void
     {
         try {
+
             if (!$this->selected_user || !$this->selected_user_role) {
                 $this->toast()->warning('Hiányzó adatok', 'Válaszd ki a felhasználót és a rangot!')->send();
                 return;
@@ -301,6 +343,13 @@ class extends Component {
                 $this->toast()->success('Sikeres rangemelés',
                     "A felhasználó most a(z) {$role_name} rangot viseli!"
                 )->send();
+
+                $channel_id = $this->getDefaultLogChannelId($this->guild);
+                $this->sendDefaultLog($channel_id, [
+                        'command' => 'rolemanager',
+                        'message' => "A felhasználó által <@{$this->selected_user->discord_id}> rangja emelve lett {$role_name} rangra.",
+                        'user' => auth()->id(),
+                ]);
             } else {
                 throw new \Exception("Discord API hiba: " . $response->body());
             }
@@ -352,9 +401,16 @@ class extends Component {
                     'last_role_time' => now(),
                 ]);
 
-                $this->toast()->success('Sikeres rangemelés',
+                $this->toast()->success('Sikeres rangcsökkentés',
                     "A felhasználó most a(z) {$role_name} rangot viseli!"
                 )->send();
+
+                $channel_id = $this->getDefaultLogChannelId($this->guild);
+                $this->sendDefaultLog($channel_id, [
+                    'command' => 'rolemanager',
+                    'message' => "A felhasználó által <@{$this->selected_user->discord_id}> rangja csökkentve lett {$role_name} rangra.",
+                    'user' => auth()->id(),
+                ]);
             } else {
                 throw new \Exception("Discord API hiba: " . $response->body());
             }
@@ -414,6 +470,13 @@ class extends Component {
                 $this->toast()->success('Sikeres figyelmeztetés',
                     "A felhasználó most a(z) {$next_level}. szintű figyelmeztetést kapta!"
                 )->send();
+
+                $channel_id = $this->getDefaultLogChannelId($this->guild);
+                $this->sendDefaultLog($channel_id, [
+                    'command' => 'addwarn',
+                    'message' => "A felhasználó figyelmeztette <@{$this->selected_user->discord_id}> felhasználót.",
+                    'user' => auth()->id(),
+                ]);
             } else {
                 throw new \Exception("Discord API hiba: " . $response->body());
             }
@@ -452,6 +515,13 @@ class extends Component {
                 ]);
 
                 $this->toast()->success('Sikeres művelet', 'Az összes figyelmeztető rang eltávolítva!')->send();
+
+                $channel_id = $this->getDefaultLogChannelId($this->guild);
+                $this->sendDefaultLog($channel_id, [
+                    'command' => 'removewarn',
+                    'message' => "A felhasználó levette <@{$this->selected_user->discord_id}> felhasználóról az összes figyelmeztetést.",
+                    'user' => auth()->id(),
+                ]);
             } else {
                 throw new \Exception("Discord API hiba: " . $response->body());
             }
@@ -515,6 +585,13 @@ class extends Component {
 
         $this->toast()->success('Sikeres művelet', 'Sikeresen töröltél egy felhasználót.')->send();
 
+        $channel_id = $this->getDefaultLogChannelId($this->guild);
+        $this->sendDefaultLog($channel_id, [
+            'command' => 'deleteuser',
+            'message' => "A felhasználó törölte <@{$this->selected_user->discord_id}> felhasználót.",
+            'user' => auth()->id(),
+        ]);
+
         $this->modal = false;
     }
 
@@ -534,6 +611,12 @@ class extends Component {
         ]);
 
         $this->toast()->success('Sikeres művelet', 'Sikeresen módosítottad egy felhasználó IC adatait.')->send();
+
+        $channel_id = $this->getDefaultLogChannelId($this->guild);
+        $this->sendDefaultLog($channel_id, [
+            'message' => "A felhasználó módosította <@{$this->selected_user->discord_id}> felhasználó IC adatait.",
+            'user' => auth()->id(),
+        ]);
     }
 
     public function autoReportDuty(): void
@@ -546,6 +629,12 @@ class extends Component {
         CheckingDutyAction::run($this->guild, true);
 
         $this->toast()->success('Sikeres művelet', 'A szolgálati idők ellenőrzése sikeresen megtörtént.')->send();
+
+        $channel_id = $this->getDefaultLogChannelId($this->guild);
+        $this->sendDefaultLog($channel_id, [
+            'message' => "A felhasználó automatikus szolgálati idő ellenőrzést hajtott végre.",
+            'user' => auth()->id(),
+        ]);
     }
 
     public function openModal($user_discord_id): void
@@ -598,6 +687,13 @@ class extends Component {
         $this->destroyUser();
 
         $this->toast()->success('Sikeres művelet', 'A felhasználó sikeresen feketelistára került.')->send();
+
+        $channel_id = $this->getDefaultLogChannelId($this->guild);
+        $this->sendDefaultLog($channel_id, [
+            'command' => 'blacklistadd',
+            'message' => "A felhasználó feketelistára tette <@{$this->selected_user->discord_id}> felhasználót. Indok: {$validated['blacklist_reason']}",
+            'user' => auth()->id(),
+        ]);
     }
 
     public function with(): array
