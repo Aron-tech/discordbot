@@ -3,6 +3,7 @@
 use App\Enums\Guild\RoleTypeEnum;
 use App\Http\Requests\UpdateUserPivotLivewireRequest;
 use App\Livewire\Traits\DcChecking;
+use App\Livewire\Traits\DcMessageTrait;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use App\Models\User;
@@ -13,6 +14,7 @@ new class extends Component {
 
     use DcChecking;
     use Interactions;
+    use DcMessageTrait;
 
     public ?Guild $guild = null;
 
@@ -88,10 +90,16 @@ new class extends Component {
 
             changeMemberData($this->guild->guild_id, $this->new_discord_id, $merged_roles);
 
-                $this->toast()->success('Sikeres művelet', 'A felhasználó sikeresen felvéve a rendszerbe!')->send();
-                $this->resetForm();
-            } finally {
-                $this->loading = false;
+            $this->toast()->success('Sikeres művelet', 'A felhasználó sikeresen felvéve a rendszerbe!')->send();
+            $channel_id = $this->getDefaultLogChannelId($this->guild);
+            $this->sendDefaultLog($channel_id, [
+                'command' => 'adduser',
+                'message' => "A felhasználó felvette <@{$this->selected_user->discord_id}> felhasználót.",
+                'user' => auth()->id(),
+            ]);
+            $this->resetForm();
+        } finally {
+            $this->loading = false;
         }
     }
 
@@ -119,7 +127,7 @@ new class extends Component {
 
     @if($loading)
         <div class="flex items-center justify-center mt-4">
-            <x-loading />
+            <x-loading/>
             <span class="ml-2">Felhasználó hozzáadása folyamatban...</span>
         </div>
     @endif
