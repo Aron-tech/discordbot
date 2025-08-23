@@ -11,6 +11,7 @@ use App\Models\Guild;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GuildController extends Controller
 {
@@ -139,15 +140,36 @@ class GuildController extends Controller
     {
         $is_empty_column = false;
 
-        $default_settings = [
+        $default_roles_name = [
             RoleTypeEnum::ADMIN_ROLES->value,
             RoleTypeEnum::MOD_ROLES->value,
             RoleTypeEnum::DEFAULT_ROLES->value,
+        ];
+
+        foreach ($default_roles_name as $role_name) {
+            $role_value = getRoleValue($guild, $role_name);
+            if ($role_value === null) {
+                $is_empty_column = true;
+                break;
+            }
+        }
+
+        $default_channels_name = [
             ChannelTypeEnum::DEFAULT_LOG->value,
         ];
 
-        foreach ($default_settings as $setting) {
-            $setting_value = getSettingValue($guild, $setting);
+        foreach ($default_channels_name as $channel_name) {
+            $channel_value = getChannelValue($guild, $channel_name);
+            if ($channel_value === null) {
+                $is_empty_column = true;
+                break;
+            }
+        }
+
+        $default_settings_name = [];
+
+        foreach ($default_settings_name as $setting_name) {
+            $setting_value = getSettingValue($guild, $setting_name);
             if ($setting_value === null) {
                 $is_empty_column = true;
                 break;
