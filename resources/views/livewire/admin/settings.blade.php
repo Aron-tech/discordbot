@@ -58,6 +58,10 @@ class extends Component {
     public ?array $ic_roles = [];
     public bool $rank_system_enabled = false;
 
+    //Egyéb funkciók
+    public bool $blacklist_enabled = false;
+    public bool $exam_enabled = false;
+
     public ?Guild $guild;
 
     private function updateGuildArray(string $field, string $key, mixed $value): void
@@ -86,6 +90,16 @@ class extends Component {
         }else {
             $this->updateGuildArray('settings', SettingTypeEnum::DUTY_SYSTEM->value, false);
             $this->toast()->success('A Duty rendszer sikeresen kikapcsolva.')->send();
+            if($this->check_enabled){
+                $this->check_enabled = false;
+                $this->updateGuildArray('settings', SettingTypeEnum::CHECK_SYSTEM->value, $this->check_enabled);
+                $this->toast()->warning('Figyelmeztetés', 'Az Automatikus ellenőrzés rendszer kikapcsolva, mivel a Duty rendszer ki lett kapcsolva.')->send();
+            }
+            if($this->warn_enabled){
+                $this->warn_enabled = false;
+                $this->updateGuildArray('settings', SettingTypeEnum::WARN_SYSTEM->value, $this->warn_enabled);
+                $this->toast()->warning('Figyelmeztetés', 'A Figyelmeztetés rendszer kikapcsolva, mivel a Duty rendszer ki lett kapcsolva.')->send();
+            }
         }
 
         $this->guild->save();
@@ -115,6 +129,12 @@ class extends Component {
         }else {
             $this->updateGuildArray('settings', SettingTypeEnum::WARN_SYSTEM->value, false);
             $this->toast()->success('A Figyelmeztetés rendszer sikeresen kikapcsolva.')->send();
+
+            if($this->check_enabled){
+                $this->check_enabled = false;
+                $this->updateGuildArray('settings', SettingTypeEnum::CHECK_SYSTEM->value, $this->check_enabled);
+                $this->toast()->warning('Figyelmeztetés', 'Az Automatikus ellenőrzés rendszer kikapcsolva, mivel a Figyelmeztetés rendszer ki lett kapcsolva.')->send();
+            }
         }
 
         $this->guild->save();
@@ -137,6 +157,11 @@ class extends Component {
         }else {
             $this->toast()->success('A Rangrendszer sikeresen kikapcsolva.')->send();
             $this->updateGuildArray('settings', SettingTypeEnum::RANK_SYSTEM->value, $this->rank_system_enabled);
+            if($this->check_enabled){
+                $this->check_enabled = false;
+                $this->updateGuildArray('settings', SettingTypeEnum::CHECK_SYSTEM->value, $this->check_enabled);
+                $this->toast()->warning('Figyelmeztetés', 'Az Automatikus ellenőrzés rendszer kikapcsolva, mivel a Figyelmeztetés rendszer ki lett kapcsolva.')->send();
+            }
         }
 
         $this->guild->save();
@@ -159,6 +184,11 @@ class extends Component {
         }else {
             $this->updateGuildArray('settings', SettingTypeEnum::HOLIDAY_SYSTEM->value, false);
             $this->toast()->success('A Szabadság rendszer sikeresen kikapcsolva.')->send();
+            if($this->check_enabled){
+                $this->check_enabled = false;
+                $this->updateGuildArray('settings', SettingTypeEnum::CHECK_SYSTEM->value, $this->check_enabled);
+                $this->toast()->warning('Figyelmeztetés', 'Az Automatikus ellenőrzés rendszer kikapcsolva, mivel a Figyelmeztetés rendszer ki lett kapcsolva.')->send();
+            }
         }
 
         $this->guild->save();
@@ -228,6 +258,32 @@ class extends Component {
             })->toArray();
     }
 
+    public function updatedBlacklistEnabled(): void
+    {
+        $this->updateGuildArray('settings', SettingTypeEnum::BLACKLIST_SYSTEM->value, $this->blacklist_enabled);
+
+        if($this->blacklist_enabled){
+            $this->toast()->success('A Feketelista funkció sikeresen bekapcsolva.')->send();
+        }else {
+            $this->toast()->success('A Feketelista funkció sikeresen kikapcsolva.')->send();
+        }
+
+        $this->guild->save();
+    }
+
+    public function updatedExamEnabled(): void
+    {
+        $this->updateGuildArray('settings', SettingTypeEnum::EXAM_SYSTEM->value, $this->exam_enabled);
+
+        if($this->exam_enabled){
+            $this->toast()->success('A Vizsgarendszer funkció sikeresen bekapcsolva.')->send();
+        }else {
+            $this->toast()->success('A Vizsgarendszer funkció sikeresen kikapcsolva.')->send();
+        }
+
+        $this->guild->save();
+    }
+
     private function getChannels()
     {
         $channels = cache()->remember($this->guild->guild_id . '_channels', 15, function () {
@@ -269,6 +325,8 @@ class extends Component {
         $this->holiday_enabled = getSettingValue($this->guild, SettingTypeEnum::HOLIDAY_SYSTEM->value) ?? false;
         $this->next_checking_time = getSettingValue($this->guild, SettingTypeEnum::NEXT_CHECKING_TIME->value);
         $this->check_enabled = getSettingValue($this->guild, SettingTypeEnum::CHECK_SYSTEM->value) ?? false;
+        $this->blacklist_enabled = getSettingValue($this->guild, SettingTypeEnum::BLACKLIST_SYSTEM->value) ?? false;
+        $this->exam_enabled = getSettingValue($this->guild, SettingTypeEnum::EXAM_SYSTEM->value) ?? false;
     }
 
     public function saveDefaultProperties(): void
@@ -375,6 +433,12 @@ class extends Component {
                 <x-number label="Előző RangUp óta minimum eltelt idő - " wire:model.lazy="min_rankup_time" step="1"/>
                 <x-number label="Minimum szolgálati idő (órában)" wire:model.lazy="min_duty_time" step="0.5"/>
                 <x-toggle wire:model.live="check_enabled" label="Funkció engedélyezése" />
+            </div>
+        </x-card>
+        <x-card header="Egyéb funkciók">
+            <div class="space-y-4">
+                <x-toggle wire:model.live="blacklist_enabled" label="Feketelista funkció engedélyezése"/>
+                <x-toggle wire:model.live="exam_enabled" label="Vizsgarendszer funkció engedélyezése"/>
             </div>
         </x-card>
     </div>

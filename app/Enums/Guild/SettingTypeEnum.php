@@ -18,6 +18,8 @@ enum SettingTypeEnum: string
     case RANK_SYSTEM = 'rank_system';
     case HOLIDAY_SYSTEM = 'holiday_system';
     case CHECK_SYSTEM = 'check_system';
+    case BLACKLIST_SYSTEM = 'blacklist_system';
+    case EXAM_SYSTEM = 'exam_system';
 
 
 }
