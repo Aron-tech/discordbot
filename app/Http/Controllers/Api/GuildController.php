@@ -139,26 +139,16 @@ class GuildController extends Controller
     {
         $is_empty_column = false;
 
-        foreach (SettingTypeEnum::cases() as $setting_type) {
-            $setting_value = getSettingValue($guild, $setting_type->value);
+        $default_settings = [
+            RoleTypeEnum::ADMIN_ROLES->value,
+            RoleTypeEnum::MOD_ROLES->value,
+            RoleTypeEnum::DEFAULT_ROLES->value,
+            ChannelTypeEnum::DEFAULT_LOG->value,
+        ];
+
+        foreach ($default_settings as $setting) {
+            $setting_value = getSettingValue($guild, $setting);
             if ($setting_value === null) {
-                $is_empty_column = true;
-                break;
-            }
-        }
-
-
-        foreach (ChannelTypeEnum::cases() as $channel_type) {
-            $channel_value = getChannelValue($guild, $channel_type->value);
-            if ($channel_value === null) {
-                $is_empty_column = true;
-                break;
-            }
-        }
-
-        foreach (RoleTypeEnum::cases() as $role_type) {
-            $role_value = getRoleValue($guild, $role_type->value);
-            if ($role_value === null) {
                 $is_empty_column = true;
                 break;
             }
