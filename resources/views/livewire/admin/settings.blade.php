@@ -61,6 +61,7 @@ class extends Component {
     //Egyéb funkciók
     public bool $blacklist_enabled = false;
     public bool $exam_enabled = false;
+    public bool $statistics_enabled = false;
 
     public ?Guild $guild;
 
@@ -284,6 +285,19 @@ class extends Component {
         $this->guild->save();
     }
 
+    public function updatedStatisticsEnabled(): void
+    {
+        $this->updateGuildArray('settings', SettingTypeEnum::STATISTIC_SYSTEM->value, $this->statistics_enabled);
+
+        if($this->statistics_enabled){
+            $this->toast()->success('A Statisztika funkció sikeresen bekapcsolva.')->send();
+        }else {
+            $this->toast()->success('A Statisztika funkció sikeresen kikapcsolva.')->send();
+        }
+
+        $this->guild->save();
+    }
+
     private function getChannels()
     {
         $channels = cache()->remember($this->guild->guild_id . '_channels', 15, function () {
@@ -327,6 +341,7 @@ class extends Component {
         $this->check_enabled = getSettingValue($this->guild, SettingTypeEnum::CHECK_SYSTEM->value) ?? false;
         $this->blacklist_enabled = getSettingValue($this->guild, SettingTypeEnum::BLACKLIST_SYSTEM->value) ?? false;
         $this->exam_enabled = getSettingValue($this->guild, SettingTypeEnum::EXAM_SYSTEM->value) ?? false;
+        $this->statistics_enabled = getSettingValue($this->guild, SettingTypeEnum::STATISTIC_SYSTEM->value) ?? false;
     }
 
     public function saveDefaultProperties(): void
@@ -439,6 +454,7 @@ class extends Component {
             <div class="space-y-4">
                 <x-toggle wire:model.live="blacklist_enabled" label="Feketelista funkció engedélyezése"/>
                 <x-toggle wire:model.live="exam_enabled" label="Vizsgarendszer funkció engedélyezése"/>
+                <x-toggle wire:model.live="statistics_enabled" label="Statisztika funkció engedélyezése"/>
             </div>
         </x-card>
     </div>

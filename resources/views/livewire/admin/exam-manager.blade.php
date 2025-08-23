@@ -11,6 +11,8 @@ use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\Session;
 use App\Models\GuildSelector;
+use App\Enums\Guild\SettingTypeEnum;
+use App\Livewire\Traits\FeatureTrait;
 
 new
 #[Layout('layouts.app')]
@@ -18,6 +20,8 @@ new
 class extends Component {
 
     use Interactions;
+    use WithPagination;
+    use FeatureTrait;
 
     public ?Guild $guild = null;
 
@@ -40,6 +44,10 @@ class extends Component {
     #[On('selectExam')]
     public function selectExam($id)
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::EXAM_SYSTEM)) {
+            return;
+        }
+
         Session::put(self::EXAM_SESSION_KEY, $id);
         $this->selected_exam = Exam::find($id);
         $this->exam_name = $this->selected_exam->name;
@@ -261,6 +269,10 @@ class extends Component {
 
     public function addExam(): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::EXAM_SYSTEM)) {
+            return;
+        }
+
         $validated = $this->validate([
             'exam_name' => ['string', 'min:3', 'max:256'],
             'attempt_count' => ['integer', 'min:1', 'max:256'],

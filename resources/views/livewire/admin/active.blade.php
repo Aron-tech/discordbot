@@ -1,8 +1,10 @@
 <?php
 
 use App\Enums\Guild\RoleTypeEnum;
+use App\Enums\Guild\SettingTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Livewire\Traits\DcMessageTrait;
+use App\Livewire\Traits\FeatureTrait;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use Carbon\Carbon;
@@ -21,6 +23,7 @@ class extends Component {
     use Interactions;
     use WithPagination;
     use DcMessageTrait;
+    use FeatureTrait;
 
     public ?Guild $guild = null;
     public int $active_duties_count = 0;
@@ -42,6 +45,10 @@ class extends Component {
 
     public function deleteUserDuty($duty_id): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::DUTY_SYSTEM)) {
+            return;
+        }
+
         if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::EDIT_PERIOD_DUTY])) {
             $this->toast()->error('Nincs jogosultságod a felhasználó kiléptetéséhez.')->send();
             return;

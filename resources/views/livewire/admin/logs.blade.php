@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Traits\DcMessageTrait;
+use App\Livewire\Traits\FeatureTrait;
 use App\Models\Duty;
 use App\Models\Guild;
 use App\Models\GuildSelector;
@@ -9,6 +10,7 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\{Layout, Title};
 use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
+use App\Enums\Guild\SettingTypeEnum;
 
 
 new
@@ -18,6 +20,7 @@ class extends Component {
     use WithPagination;
     use Interactions;
     use DcMessageTrait;
+    use FeatureTrait;
 
     public ?int $quantity = 20;
 
@@ -39,6 +42,10 @@ class extends Component {
 
     public function deleteDuty(int $duty_id): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::DUTY_SYSTEM)) {
+            return;
+        }
+
         $this->selected_duty = Duty::withTrashed()->findOrFail($duty_id);
 
         $this->dialog()

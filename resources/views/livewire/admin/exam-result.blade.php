@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\Guild\SettingTypeEnum;
+use App\Livewire\Traits\FeatureTrait;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,6 +18,7 @@ class extends Component {
 
     use Interactions;
     use WithPagination;
+    use FeatureTrait;
 
     public ?Guild $guild = null;
 
@@ -35,6 +38,10 @@ class extends Component {
 
     public function deleteResult($result_id): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::EXAM_SYSTEM)) {
+            return;
+        }
+
         $this->dialog()
             ->question('Figyelmeztetés!', 'Biztosan törölni szeretnéd a választ?')
             ->confirm('Törlés', 'destroyResult', $result_id)
@@ -82,7 +89,7 @@ class extends Component {
 <div>
     <x-table :$headers :$rows filter loading>
         @interact('column_action', $row)
-            <x-button.circle color="red" icon="trash" wire:click="deleteResult('{{ $row->id }}')"/>
+        <x-button.circle color="red" icon="trash" wire:click="deleteResult('{{ $row->id }}')"/>
         @endinteract
     </x-table>
 </div>

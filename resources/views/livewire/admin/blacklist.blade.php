@@ -1,7 +1,9 @@
 <?php
 
+use App\Enums\Guild\SettingTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Livewire\Traits\DcMessageTrait;
+use App\Livewire\Traits\FeatureTrait;
 use App\Models\BlackList;
 use App\Models\Guild;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,6 +24,7 @@ class extends Component {
     use withPagination;
     use Interactions;
     use DcMessageTrait;
+    use FeatureTrait;
 
     public ?int $quantity = 10;
 
@@ -39,6 +42,10 @@ class extends Component {
 
     public function deleteBlacklist($blacklist_id): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::BLACKLIST_SYSTEM)) {
+            return;
+        }
+
         $blacklist = $this->guild->blacklistsWithTrashed()->find($blacklist_id);
 
         if (!isset($blacklist)) {
@@ -88,6 +95,10 @@ class extends Component {
 
     public function addBlacklist(): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::BLACKLIST_SYSTEM)) {
+            return;
+        }
+
         if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::ADD_BLACKLIST])) {
             $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod a feketelistához hozzáadni.')->send();
             return;

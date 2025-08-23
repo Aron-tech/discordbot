@@ -20,6 +20,7 @@ enum SettingTypeEnum: string
     case CHECK_SYSTEM = 'check_system';
     case BLACKLIST_SYSTEM = 'blacklist_system';
     case EXAM_SYSTEM = 'exam_system';
+    case STATISTIC_SYSTEM = 'statistic_system';
 
 
 }

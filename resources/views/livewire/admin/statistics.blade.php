@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Enums\Guild\SettingTypeEnum;
+use App\Livewire\Traits\FeatureTrait;
 use App\Models\Guild;
 use App\Models\GuildSelector;
 use Illuminate\Database\Eloquent\Collection;
@@ -10,11 +11,16 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Volt\Component;
 use Livewire\Attributes\{Layout, Title};
 use Carbon\Carbon;
+use TallStackUi\Traits\Interactions;
 
 new
 #[Layout('layouts.app')]
 #[Title('Szolgálati Statisztikák')]
 class extends Component {
+
+    use FeatureTrait;
+    use Interactions;
+
     public ?Guild $guild = null;
     public array $dutyHoursData = [];
     public array $area_data = [];
@@ -24,6 +30,10 @@ class extends Component {
     public function mount(): void
     {
         $this->guild = GuildSelector::getGuild();
+
+        if (!$this->isFeatureEnabled($this->guild, SettingTypeEnum::STATISTIC_SYSTEM)) {
+            return;
+        }
 
         $this->getDiagramData();
         $this->getUserActivityData();
@@ -122,7 +132,7 @@ class extends Component {
         }
 
         // Rendezzük csökkenő sorrendbe a szolgálati idő alapján
-        usort($this->duty_distribution_data, function($a, $b) {
+        usort($this->duty_distribution_data, function ($a, $b) {
             return $b['value'] - $a['value'];
         });
     }
@@ -142,7 +152,8 @@ class extends Component {
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <h3 class="text-lg font-semibold mb-4 text-center text-gray-900 dark:text-white">Szolgálati Idő Eloszlás ({{getSettingValue($guild, SettingTypeEnum::WARN_TIME->value)}} nap)</h3>
+            <h3 class="text-lg font-semibold mb-4 text-center text-gray-900 dark:text-white">Szolgálati Idő Eloszlás
+                ({{getSettingValue($guild, SettingTypeEnum::WARN_TIME->value)}} nap)</h3>
             <div id="dutyDistributionChart" class="h-[300px]" wire:ignore></div>
         </div>
     </div>
@@ -365,7 +376,7 @@ class extends Component {
                 tooltip: {
                     theme: isDarkMode() ? 'dark' : 'light',
                     y: {
-                        formatter: function(val) {
+                        formatter: function (val) {
                             // Ellenőrizzük, hogy melyik diagram típusról van szó
                             if (title === 'Szolgálati Idő Eloszlás') {
                                 const hours = Math.floor(val / 60);
@@ -451,6 +462,7 @@ class extends Component {
             activityChart = new ApexCharts(document.querySelector("#userActivityChart"), options);
             activityChart.render();
         }
+
         function renderDistributionChart(data) {
             if (distributionChart) distributionChart.destroy();
 
@@ -527,7 +539,7 @@ class extends Component {
                 },
                 tooltip: {
                     theme: isDarkMode() ? 'dark' : 'light',
-                    custom: function({series, seriesIndex}) {
+                    custom: function ({series, seriesIndex}) {
                         const item = filteredData[seriesIndex];
                         const percentage = ((item.value / totalMinutes) * 100).toFixed(1);
                         return `
@@ -546,7 +558,7 @@ class extends Component {
                         colors: theme.textColor,
                         useSeriesColors: false
                     },
-                    formatter: function(seriesName, opts) {
+                    formatter: function (seriesName, opts) {
                         return seriesName.split(' (')[0];
                     }
                 }

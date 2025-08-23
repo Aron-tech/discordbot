@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\Guild\SettingTypeEnum;
+use App\Livewire\Traits\FeatureTrait;
 use App\Models\Exam;
 use App\Models\ExamQuestion;
 use App\Models\Guild;
@@ -17,6 +19,7 @@ new
 class extends Component {
 
     use Interactions;
+    use FeatureTrait;
 
     public ?Exam $selected_exam = null;
 
@@ -35,12 +38,16 @@ class extends Component {
     #[On('selectExam')]
     public function selectExam(Exam $exam): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::EXAM_SYSTEM)) {
+            return;
+        }
+
         if (auth()->user()->exam_results()->count() >= $exam->attempt_count) {
             $this->toast()->error('Elérted a maximum próbálkozási lehetőséget.')->send();
             return;
         }
 
-        if(!empty($exam->role_whitelist)){
+        if (!empty($exam->role_whitelist)) {
             $user = auth()->user();
             $guild = $this->guild;
 

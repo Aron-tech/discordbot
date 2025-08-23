@@ -17,6 +17,8 @@ use App\Http\Requests\UpdateUserPivotLivewireRequest;
 use App\Enums\Guild\RoleTypeEnum;
 use App\Livewire\Traits\DcMessageTrait;
 use App\Enums\Guild\ChannelTypeEnum;
+use App\Enums\Guild\SettingTypeEnum;
+use App\Livewire\Traits\FeatureTrait;
 
 new
 #[Layout('layouts.app')]
@@ -27,6 +29,7 @@ class extends Component {
     use FormatsDuty;
     use WithPagination;
     use DcMessageTrait;
+    use FeatureTrait;
 
     public ?Guild $guild = null;
 
@@ -118,6 +121,9 @@ class extends Component {
 
     public function addDuty(DutyTypeEnum $type)
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::DUTY_SYSTEM)) {
+            return;
+        }
 
         if (DutyTypeEnum::PERIOD === $type) {
 
@@ -170,6 +176,10 @@ class extends Component {
 
     public function deleteUserDuties(DutyTypeEnum $type): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::DUTY_SYSTEM)) {
+            return;
+        }
+
         $this->dialog()
             ->question('Figyelmeztetés!', 'Biztosan törölni szeretnéd a felhasználó szolgálati idejét?')
             ->confirm('Törlés', method: 'destroyUserDuties', params: $type->value)
@@ -212,6 +222,10 @@ class extends Component {
 
     public function deleteDuties(DutyTypeEnum $type): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::DUTY_SYSTEM)) {
+            return;
+        }
+
         $this->dialog()
             ->question('Figyelmeztetés!', 'Biztosan törölni szeretnéd az összes szolgálati időt?')
             ->confirm('Törlés', method: 'destroyDuties', params: $type->value)
@@ -255,6 +269,10 @@ class extends Component {
     public function updateUserRole(): void
     {
         try {
+            if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::RANK_SYSTEM)) {
+                return;
+            }
+
             if (!$this->selected_user || !$this->selected_user_role) {
                 $this->toast()->warning('Hiányzó adatok', 'Válaszd ki a felhasználót és a rangot!')->send();
                 return;
@@ -304,6 +322,10 @@ class extends Component {
     public function promoteUserRole(): void
     {
         try {
+
+            if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::RANK_SYSTEM)) {
+                return;
+            }
 
             if (!$this->selected_user || !$this->selected_user_role) {
                 $this->toast()->warning('Hiányzó adatok', 'Válaszd ki a felhasználót és a rangot!')->send();
@@ -363,6 +385,10 @@ class extends Component {
     public function demoteUserRole(): void
     {
         try {
+            if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::RANK_SYSTEM)) {
+                return;
+            }
+
             if (!$this->selected_user || !$this->selected_user_role) {
                 $this->toast()->warning('Hiányzó adatok', 'Válaszd ki a felhasználót és a rangot!')->send();
                 return;
@@ -424,6 +450,10 @@ class extends Component {
     public function warnUser(): void
     {
         try {
+            if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::WARN_SYSTEM)) {
+                return;
+            }
+
             if (!$this->selected_user) {
                 $this->toast()->warning('Hiányzó adatok', 'Válaszd ki a figyelmeztetendő felhasználót!')->send();
                 return;
@@ -490,6 +520,10 @@ class extends Component {
     public function deleteUserWarn(): void
     {
         try {
+            if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::WARN_SYSTEM)) {
+                return;
+            }
+
             if (!$this->selected_user) {
                 $this->toast()->warning('Hiányzó adatok', 'Válaszd ki a felhasználót!')->send();
                 return;
@@ -621,6 +655,10 @@ class extends Component {
 
     public function autoReportDuty(): void
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::CHECK_SYSTEM)) {
+            return;
+        }
+
         if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::USE_AUTO_REPORT])) {
             $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod az aktuális szolgálati idők szerkesztéséhez.')->send();
             return;
@@ -661,6 +699,15 @@ class extends Component {
 
     public function confirmBlackList()
     {
+        if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::BLACKLIST_SYSTEM)) {
+            return;
+        }
+
+        if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::ADD_BLACKLIST])) {
+            $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod a felhasználó feketelistára tételéhez.')->send();
+            return;
+        }
+
         $this->dialog()
             ->question('Figyelmeztetés!', 'Biztosan feketelistára szeretnéd tenni a felhasználót? (A felhasználó automatikusan törlésre kerül a rendszerből.)')
             ->confirm('Feketelistára tétel', method: 'addBlackList')
@@ -670,11 +717,6 @@ class extends Component {
 
     public function addBlackList()
     {
-        if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::ADD_BLACKLIST])) {
-            $this->toast()->error('Hozzáférés megtagadva', 'Nincs jogosultságod a felhasználó feketelistára tételéhez.')->send();
-            return;
-        }
-
         $validated = $this->validate([
             'blacklist_reason' => 'required|string|max:255|min:3',
         ]);
