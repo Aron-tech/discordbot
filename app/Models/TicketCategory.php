@@ -19,12 +19,10 @@ class TicketCategory extends Model
         'initial_message',
         'max_tickets',
         'category_id',
-        'discord_channel_ids',
     ];
 
     protected $casts = [
         'moderator_roles' => 'json',
-        'discord_channel_ids' => 'json',
         'max_tickets' => 'integer',
     ];
 
