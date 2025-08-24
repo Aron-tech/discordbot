@@ -50,6 +50,7 @@
                             <x-side-bar.item text="{{__('Szolgálatban lévők')}}" icon="clipboard-document-list" :route="route('admin.duty.active')"  :current="Route::currentRouteNamed('admin.duty.active')"/>
                             <x-side-bar.item text="{{__('Duty log')}}" icon="archive-box" :route="route('admin.logs')"  :current="Route::currentRouteNamed('admin.logs')"/>
                             <x-side-bar.item text="{{__('Feketelista log')}}" icon="flag" :route="route('admin.blacklist')"  :current="Route::currentRouteNamed('admin.blacklist')"/>
+                            <x-side-bar.item text="{{__('Ticket panel')}}" icon="ticket" :route="route('admin.ticket-manager')"  :current="Route::currentRouteNamed('admin.ticket-manager')"/>
                             <x-side-bar.item text="{{__('Vizsga panel')}}" icon="pencil-square" :route="route('admin.exam-manager')"  :current="Route::currentRouteNamed('admin.exam-manager')"/>
                             <x-side-bar.item text="{{__('Vizsga eredmények')}}" icon="presentation-chart-bar" :route="route('admin.exam-results')"  :current="Route::currentRouteNamed('admin.exam-results')"/>
                             <x-side-bar.item text="{{__('Statisztika')}}" icon="chart-pie" :route="route('admin.statistics')"  :current="Route::currentRouteNamed('admin.statistics')"/>
