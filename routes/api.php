@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DutyController;
 use App\Http\Controllers\Api\GuildController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\BotStatusController;
+use App\Http\Controllers\TicketCategoryController;
 use App\Http\Middleware\CheckApiKeyMiddleware;
 use App\Http\Middleware\HandleModelNotFoundMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,8 @@ Route::middleware([CheckApiKeyMiddleware::class, HandleModelNotFoundMiddleware::
     Route::put('guilds/{guild}', [GuildController::class, 'update']);
 
     Route::get('guilds/', [GuildController::class, 'getGuildList'])->name('guilds.all');
+
+    Route::get('tickets/categories/{guild}', [TicketCategoryController::class, 'index']);
 
     Route::prefix('guilds/{guild}')->group(function () {
 

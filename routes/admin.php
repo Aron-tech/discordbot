@@ -15,6 +15,8 @@ Route::prefix('admin/')->name('admin.')->group(function () {
 
     Volt::route('panel', 'admin.panel')->name('panel')->middleware('check.permission:view_admin_panel');
 
+    Volt::route('ticket-manager', 'admin.ticket-manager')->name('ticket-manager');
+
     Volt::route('exam', 'admin.exam-manager')->name('exam-manager')->middleware('check.permission:view_exam_manager');
 
     Volt::route('exam/log', 'admin.exam-result')->name('exam-results')->middleware('check.permission:view_exam_result');

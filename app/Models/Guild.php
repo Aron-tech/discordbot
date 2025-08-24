@@ -64,4 +64,9 @@ class Guild extends Model
     {
         return $this->hasMany(BlackList::class)->withTrashed();
     }
+
+    public function ticketCategories(): HasMany
+    {
+        return $this->hasMany(TicketCategory::class, 'guild_guild_id', 'guild_id');
+    }
 }
