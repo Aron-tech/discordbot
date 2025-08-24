@@ -14,10 +14,11 @@ class CheckingDutyAction
 
     public function handle(Guild $guild, bool $is_executing = false): Collection
     {
+
+        $next_checking_time = getSettingValue($guild, SettingTypeEnum::NEXT_CHECKING_TIME->value);
         $min_rank_up_duty = getSettingValue($guild, SettingTypeEnum::MIN_RANK_UP_DUTY->value);
         $min_rank_up_time = getSettingValue($guild, SettingTypeEnum::MIN_RANK_UP_TIME->value);
         $min_duty = getSettingValue($guild, SettingTypeEnum::MIN_DUTY->value);
-        $warn_time = getSettingValue($guild, SettingTypeEnum::WARN_TIME->value);
 
         $users = $guild->users()
             ->select('users.discord_id')
@@ -25,10 +26,10 @@ class CheckingDutyAction
             ->get();
 
         foreach ($users as $user) {
-            $user_rank_up = ($user->total_duty_time >= ($min_rank_up_duty * 60) && Carbon::parse($user->pivot->last_role_time)->addDays($min_rank_up_time)->isPast()) && (is_null($user->pivot->last_warn_time) || Carbon::parse($user->pivot->last_warn_time)->addDays($warn_time)->isPast());
+            $user_rank_up = ($user->total_duty_time >= ($min_rank_up_duty * 60) && Carbon::parse($user->pivot->last_role_time)->addDays($min_rank_up_time)->isPast()) && (is_null($user->pivot->last_warn_time) || Carbon::parse($user->pivot->last_warn_time)->addDays($next_checking_time)->isPast());
             $user_warn = ($user->total_duty_time < ($min_duty * 60)) &&
-                (is_null($user->pivot->freedom_expiring) || Carbon::parse($user->pivot->freedom_expiring)->lt(Carbon::now()->subDays($warn_time)))
-            && ($user->pivot->created_at->addDays($warn_time)->isPast());
+                (is_null($user->pivot->freedom_expiring) || Carbon::parse($user->pivot->freedom_expiring)->lt(Carbon::now()->subDays($next_checking_time)))
+            && ($user->pivot->created_at->addDays($next_checking_time)->isPast());
 
             if ($is_executing) {
                 $this->processUserActions($guild, $user, $user_rank_up, $user_warn);
