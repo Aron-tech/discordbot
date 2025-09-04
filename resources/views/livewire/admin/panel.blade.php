@@ -125,6 +125,8 @@ class extends Component {
             return;
         }
 
+        $channel_id = $this->getDutyLogChannelId($this->guild);
+
         if (DutyTypeEnum::PERIOD === $type) {
 
             if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::EDIT_PERIOD_DUTY])) {
@@ -140,7 +142,6 @@ class extends Component {
             ]);
 
             $this->toast()->success('Sikeres művelet', 'Sikeresen hozzáadtál a felhasználó szolgálati idejéhez.')->send();
-            $channel_id = $this->getDutyLogChannelId($this->guild);
             $this->sendDefaultLog($channel_id, [
                 'command' => 'dutymanager',
                 'message' => "A felhasználó hozzáadott <@{$this->selected_user->discord_id}> felhasználónak az aktuális összes szolgálati idejéhez {$this->add_period_duty_time} percet.",
@@ -165,7 +166,6 @@ class extends Component {
             $duty->delete();
 
             $this->toast()->success('Sikeres művelet', 'Sikeresen hozzáadtál a felhasználó összes szolgálati idejéhez.')->send();
-            $channel_id = $this->getDutyLogChannelId($this->guild);
             $this->sendDefaultLog($channel_id, [
                 'message' => "A felhasználó hozzáadott <@{$this->selected_user->discord_id}> felhasználónak az összes szolgálati idejéhez {$this->add_total_duty_time} percet.",
                 'user' => auth()->id(),
@@ -189,6 +189,7 @@ class extends Component {
 
     public function destroyUserDuties($type): void
     {
+        $channel_id = $this->getDutyLogChannelId($this->guild);
         if (DutyTypeEnum::PERIOD->value === $type) {
 
             if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::DELETE_USER_PERIOD_DUTY])) {
@@ -198,7 +199,6 @@ class extends Component {
 
             $this->selected_user->duties()->where('guild_guild_id', $this->guild->guild_id)->delete();
             $this->toast()->success('Sikeres művelet', 'Sikeresen törölted a szolgálati idejét a felhasználónak.')->send();
-            $channel_id = $this->getDutyLogChannelId($this->guild);
             $this->sendDefaultLog($channel_id, [
                 'message' => "A felhasználó törölte az aktuális összes szolgálati időjét <@{$this->selected_user->discord_id}> felhasználónak.",
                 'user' => auth()->id(),
@@ -212,7 +212,6 @@ class extends Component {
 
             $this->selected_user->dutiesWithTrashed()->where('guild_guild_id', $this->guild->guild_id)->forceDelete();
             $this->toast()->success('Sikeres művelet', 'Sikeresen törölted az összes szolgálati idejét a felhasználónak.')->send();
-            $channel_id = $this->getDutyLogChannelId($this->guild);
             $this->sendDefaultLog($channel_id, [
                 'message' => "A felhasználó törölte az összes szolgálati időjét <@{$this->selected_user->discord_id}> felhasználónak.",
                 'user' => auth()->id(),
@@ -235,6 +234,7 @@ class extends Component {
 
     public function destroyDuties($type)
     {
+        $channel_id = $this->getDutyLogChannelId($this->guild);
         if (DutyTypeEnum::PERIOD->value === $type) {
 
             if (auth()->user()->cannot('hasPermission', [$this->guild, PermissionEnum::DELETE_PERIOD_DUTY])) {
