@@ -54,6 +54,8 @@ class extends Component {
 
     public ?string $search = null;
 
+    public array $visible_columns = ['discord_id', 'name', 'ic_name', 'duties_sum_value', 'duties_with_trashed_sum_value', 'in_role_days', 'in_guild_days', 'status', 'action'];
+
 
     public array $sort = [
         'column' => 'id',
@@ -740,57 +742,61 @@ class extends Component {
 
     public function with(): array
     {
+        $allHeaders = [
+            ['index' => 'discord_id', 'label' => 'Discord ID'],
+            ['index' => 'name', 'label' => 'DC Név'],
+            ['index' => 'ic_name', 'label' => 'IC név'],
+            ['index' => 'duties_sum_value', 'label' => 'Szolgálati idő'],
+            ['index' => 'duties_with_trashed_sum_value', 'label' => 'Összes sz. idő'],
+            ['index' => 'in_role_days', 'label' => 'Rangon'],
+            ['index' => 'in_guild_days', 'label' => 'Frakcióban'],
+            ['index' => 'duties_max_start_time', 'label' => 'Utolsó szolgálatba lépés ideje'],
+            ['index' => 'status', 'label' => 'Státusz', 'sortable' => false],
+            ['index' => 'action'],
+        ];
+
+        $headers = array_filter($allHeaders, fn($header) => in_array($header['index'], $this->visible_columns));
+        $headers = collect($allHeaders)
+            ->whereIn('index', $this->visible_columns)
+            ->when(!in_array('discord_id', $this->visible_columns), fn($c) => $c->prepend(['index' => 'discord_id', 'label' => 'Discord ID']))
+            ->when(!in_array('action', $this->visible_columns), fn($c) => $c->push(['index' => 'action']))
+            ->values()
+            ->toArray();
+
+        $rows = $this->guild->users()
+            ->withSum(['duties' => function ($query) { $query->where('guild_guild_id', $this->guild->guild_id); }], 'value')
+            ->withSum(['dutiesWithTrashed' => function ($query) { $query->where('guild_guild_id', $this->guild->guild_id); }], 'value')
+            ->withMax(['duties' => function ($query) {
+                $query->where('guild_guild_id', $this->guild->guild_id);
+            }], 'start_time')
+            ->selectRaw('DATEDIFF(NOW(), COALESCE(guild_user.last_role_time, guild_user.created_at)) as in_role_days')
+            ->selectRaw('DATEDIFF(NOW(), guild_user.created_at) as in_guild_days')
+            ->orderBy(...array_values($this->sort))
+            ->paginate($this->quantity)
+            ->through(function ($user) use ($headers) {
+                $row = [
+                    'discord_id' => $user->discord_id,
+                    'name' => $user->name,
+                    'ic_name' => $user->pivot->ic_name,
+                    'duties_sum_value' => $this->formatMinutesToHHMM($user->duties_sum_value),
+                    'duties_with_trashed_sum_value' => $this->formatMinutesToHHMM($user->duties_with_trashed_sum_value),
+                    'in_role_days' => $user->in_role_days . ' napja',
+                    'in_guild_days' => $user->in_guild_days . ' napja',
+                    'duties_max_start_time' => $user->duties_max_start_time
+                        ? Carbon::parse($user->duties_max_start_time)->diffForHumans() : 'Nincs adat',
+                    'status' => collect([
+                        $user->pivot->freedom_expiring && Carbon::parse($user->pivot->freedom_expiring)->isFuture() ? 'Szab.' : null,
+                        $user->pivot->last_warn_time && Carbon::parse($user->pivot->last_warn_time)->diffInDays(now()) < 7 ? 'Figy.' : null,
+                    ])->filter()->join(' / '),
+                    'action' => '',
+                ];
+
+                return collect($row)->only(array_column($headers, 'index'))->toArray();
+            });
+
         return [
-            'headers' => [
-                ['index' => 'discord_id', 'label' => 'Discord ID'],
-                ['index' => 'name', 'label' => 'DC Név'],
-                ['index' => 'ic_name', 'label' => 'IC név'],
-                ['index' => 'duties_sum_value', 'label' => 'Szolgálati idő'],
-                ['index' => 'duties_with_trashed_sum_value', 'label' => 'Összes sz. idő'],
-                ['index' => 'in_role_days', 'label' => 'Rangon'],
-                ['index' => 'in_guild_days', 'label' => 'Frakcióban'],
-                ['index' => 'status', 'label' => 'Státusz', 'sortable' => false],
-                ['index' => 'action'],
-            ],
-
-            'rows' => $this->guild->users()
-                ->withSum(['duties' => function ($query) {
-                    $query->where('guild_guild_id', $this->guild->guild_id);
-                }], 'value')
-                ->withSum(['dutiesWithTrashed' => function ($query) {
-                    $query->where('guild_guild_id', $this->guild->guild_id);
-                }], 'value')
-                ->selectRaw('DATEDIFF(NOW(), COALESCE(guild_user.last_role_time, guild_user.created_at)) as in_role_days')
-                ->selectRaw('DATEDIFF(NOW(), guild_user.created_at) as in_guild_days')
-                ->orderBy(...array_values($this->sort))
-                ->when($this->search, function (Builder $query) {
-                    $query->where(function ($subQuery) {
-                        $subQuery->where('discord_id', 'like', "%{$this->search}%")
-                            ->orWhere('users.name', 'like', "%{$this->search}%")
-                            ->orWhere('guild_user.ic_name', 'like', "%{$this->search}%")
-                            ->orWhere('guild_user.ic_number', 'like', "%{$this->search}%")
-                            ->orWhere('guild_user.ic_tel', 'like', "%{$this->search}%")
-                            ->orWhere('email', 'like', "%{$this->search}%");
-                    });
-                })
-                ->paginate($this->quantity)
-                ->through(function ($user) {
-                    return [
-                        'discord_id' => $user->discord_id,
-                        'name' => $user->name,
-                        'ic_name' => $user->pivot->ic_name,
-                        'duties_sum_value' => $this->formatMinutesToHHMM($user->duties_sum_value),
-                        'duties_with_trashed_sum_value' => $this->formatMinutesToHHMM($user->duties_with_trashed_sum_value),
-                        'in_role_days' => $user->in_role_days . ' napja',
-                        'in_guild_days' => $user->in_guild_days . ' napja',
-                        'status' => collect([
-                            $user->pivot->freedom_expiring && Carbon::parse($user->pivot->freedom_expiring)->isFuture() ? 'Szab.' : null,
-                            $user->pivot->last_warn_time && Carbon::parse($user->pivot->last_warn_time)->diffInDays(now()) < 7 ? 'Figy.' : null,
-                        ])->filter()->join(' / '),
-                    ];
-                })
-                ->withQueryString(),
-
+            'headers' => $headers,
+            'rows' => $rows,
             'type' => 'data',
         ];
     }
@@ -812,6 +818,15 @@ class extends Component {
                       color="red" icon="trash"/>
         </div>
     </x-card>
+
+    <div class="my-4 lg:w-1/3 ml-auto">
+        <x-select.styled
+            label="Látható oszlopok"
+            :options="collect(config('columns.admin_panel'))->map(fn($label, $key) => ['label' => $label, 'value' => $key])->values()"
+            wire:model.live="visible_columns"
+            multiple
+        />
+    </div>
 
     <x-table :$headers :$rows filter loading paginate striped :$sort :quantity="[10,20,50]">
         @interact('column_action', $row)
