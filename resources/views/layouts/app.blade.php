@@ -17,7 +17,7 @@
     <x-dialog />
     <x-toast />
     @if(request()->routeIs('admin.settings') || request()->routeIs('admin.install'))
-        <x-banner color="red" text="Figyelem! A weboldalon 15 perces késleltetéssel történek meg a változások a rangok és a csatornák megjelenítésében. A mentésnél nincs." lg />
+        <x-banner color="red" text="Figyelem! A Discord szerveren való váltotatások 15 perccel később jelennek meg a weboldalon." lg />
     @endif
     <x-layout>
         <x-slot:header>
