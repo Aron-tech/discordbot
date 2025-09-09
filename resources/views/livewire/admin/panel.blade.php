@@ -766,9 +766,7 @@ class extends Component {
         $rows = $this->guild->users()
             ->withSum(['duties' => function ($query) { $query->where('guild_guild_id', $this->guild->guild_id); }], 'value')
             ->withSum(['dutiesWithTrashed' => function ($query) { $query->where('guild_guild_id', $this->guild->guild_id); }], 'value')
-            ->withMax(['dutiesWithTrashed' => function ($query) {
-                $query->where('guild_guild_id', $this->guild->guild_id);
-            }], 'start_time')
+            ->withMax(['dutiesWithTrashed' => function ($query) { $query->where('guild_guild_id', $this->guild->guild_id); }], 'start_time')
             ->selectRaw('DATEDIFF(NOW(), COALESCE(guild_user.last_role_time, guild_user.created_at)) as in_role_days')
             ->selectRaw('DATEDIFF(NOW(), guild_user.created_at) as in_guild_days')
             ->orderBy(...array_values($this->sort))
@@ -782,8 +780,7 @@ class extends Component {
                     'duties_with_trashed_sum_value' => $this->formatMinutesToHHMM($user->duties_with_trashed_sum_value),
                     'in_role_days' => $user->in_role_days . ' napja',
                     'in_guild_days' => $user->in_guild_days . ' napja',
-                    'duties_with_trashed_max_start_time' => $user->duties_max_start_time
-                        ? Carbon::parse($user->duties_max_start_time)->diffForHumans() : 'Nincs adat',
+                    'duties_with_trashed_max_start_time' => $user->duties_with_trashed_max_start_time ? Carbon::parse($user->duties_max_start_time)->diffForHumans() : 'Nincs adat',
                     'status' => collect([
                         $user->pivot->freedom_expiring && Carbon::parse($user->pivot->freedom_expiring)->isFuture() ? 'Szab.' : null,
                         $user->pivot->last_warn_time && Carbon::parse($user->pivot->last_warn_time)->diffInDays(now()) < 7 ? 'Figy.' : null,
