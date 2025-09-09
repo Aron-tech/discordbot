@@ -780,7 +780,7 @@ class extends Component {
                     'duties_with_trashed_sum_value' => $this->formatMinutesToHHMM($user->duties_with_trashed_sum_value),
                     'in_role_days' => $user->in_role_days . ' napja',
                     'in_guild_days' => $user->in_guild_days . ' napja',
-                    'duties_with_trashed_max_start_time' => $user->duties_with_trashed_max_start_time ? Carbon::parse($user->duties_max_start_time)->diffForHumans() : 'Nincs adat',
+                    'duties_with_trashed_max_start_time' => $user->duties_with_trashed_max_start_time ? Carbon::parse($user->duties_with_trashed_max_start_time)->diffForHumans() : 'Nincs adat',
                     'status' => collect([
                         $user->pivot->freedom_expiring && Carbon::parse($user->pivot->freedom_expiring)->isFuture() ? 'Szab.' : null,
                         $user->pivot->last_warn_time && Carbon::parse($user->pivot->last_warn_time)->diffInDays(now()) < 7 ? 'Figy.' : null,
