@@ -88,7 +88,7 @@ new class extends Component {
 
             $merged_roles = array_unique(array_merge($existing_roles, $default_roles));
 
-            changeMemberData($this->guild->guild_id, $this->new_discord_id, $merged_roles);
+            changeMemberRole($this->guild->guild_id, $this->new_discord_id, $merged_roles);
 
             $this->toast()->success('Sikeres művelet', 'A felhasználó sikeresen felvéve a rendszerbe!')->send();
             $channel_id = $this->getDefaultLogChannelId($this->guild);

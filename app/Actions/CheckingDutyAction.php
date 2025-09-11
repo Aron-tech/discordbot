@@ -72,7 +72,7 @@ class CheckingDutyAction
         if ($next_role) {
             $new_roles = array_diff($current_roles, $ic_roles);
             $new_roles[] = $next_role;
-            changeMemberData($guild->guild_id, $user->discord_id, $new_roles);
+            changeMemberRole($guild->guild_id, $user->discord_id, $new_roles);
         }
     }
 
