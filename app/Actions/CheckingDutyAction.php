@@ -2,15 +2,19 @@
 
 namespace App\Actions;
 
+use App\Enums\Guild\ChannelTypeEnum;
 use App\Enums\Guild\SettingTypeEnum;
+use App\Livewire\Traits\DcMessageTrait;
 use App\Models\Guild;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Collection;
 use Lorisleiva\Actions\Concerns\AsAction;
 
 class CheckingDutyAction
 {
     use AsAction;
+    use DcMessageTrait;
 
     public function handle(Guild $guild, bool $is_executing = false): Collection
     {
@@ -29,7 +33,7 @@ class CheckingDutyAction
             $user_rank_up = ($user->total_duty_time >= ($min_rank_up_duty * 60) && Carbon::parse($user->pivot->last_role_time)->addDays($min_rank_up_time)->isPast()) && (is_null($user->pivot->last_warn_time) || Carbon::parse($user->pivot->last_warn_time)->addDays($next_checking_time)->isPast());
             $user_warn = ($user->total_duty_time < ($min_duty * 60)) &&
                 (is_null($user->pivot->freedom_expiring) || Carbon::parse($user->pivot->freedom_expiring)->lt(Carbon::now()->subDays($next_checking_time)))
-            && ($user->pivot->created_at->addDays($next_checking_time)->isPast());
+                && ($user->pivot->created_at->addDays($next_checking_time)->isPast());
 
             if ($is_executing) {
                 $this->processUserActions($guild, $user, $user_rank_up, $user_warn);
@@ -56,7 +60,7 @@ class CheckingDutyAction
                 $this->handleWarn($guild, $user, $current_roles);
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             logger()->error("Duty check error for user {$user->discord_id}: ".$e->getMessage());
         }
     }
@@ -76,6 +80,9 @@ class CheckingDutyAction
         }
     }
 
+    /**
+     * @throws Exception
+     */
     protected function handleWarn(Guild $guild, $user, array $current_roles): void
     {
         $user->pivot->last_warn_time = now();
@@ -83,6 +90,40 @@ class CheckingDutyAction
 
         $warn_roles = getRoleValue($guild, 'warn_roles', []);
         $next_warn_role = $this->getNextRole($current_roles, $warn_roles);
+        $next_warn_index = array_search($next_warn_role, $warn_roles, true);
+
+        $warn_channel = getChannelValue($guild, ChannelTypeEnum::WARN->value);
+        $embed = [
+            'title' => '⚠️ Figyelmeztetés',
+            'color' => hexdec('FF0000'),
+            'fields' => [
+                [
+                    'name' => '👤 Felhasználó',
+                    'value' => '<@'.$user->discord_id.'>',
+                    'inline' => true,
+                ],
+                [
+                    'name' => '📊 Figyelmeztetési szint',
+                    'value' => (string) (($next_warn_index + 1).'.'),
+                    'inline' => true,
+                ],
+                [
+                    'name' => '🛡️ Moderátor',
+                    'value' => 'Rendszer',
+                    'inline' => true,
+                ],
+                [
+                    'name' => '📄 Indok',
+                    'value' => '```Inaktivitás```',
+                    'inline' => false,
+                ],
+            ],
+            'footer' => [
+                'text' => 'Duty Management System • Elküldve: '.now()->locale('hu')->translatedFormat('Y.m.d H:i:s'),
+            ],
+        ];
+
+        $this->sendEmbed($warn_channel, $embed);
 
         if ($next_warn_role) {
             $new_roles = array_diff($current_roles, $warn_roles);
