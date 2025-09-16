@@ -94,7 +94,7 @@ new class extends Component {
             $channel_id = $this->getDefaultLogChannelId($this->guild);
             $this->sendDefaultLog($channel_id, [
                 'command' => 'adduser',
-                'message' => "A felhasználó felvette <@{$this->selected_user->discord_id}> felhasználót.",
+                'message' => "A felhasználó felvette <@{$this->new_discord_id}> felhasználót.",
                 'user' => auth()->id(),
             ]);
             $this->resetForm();
