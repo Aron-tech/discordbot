@@ -296,7 +296,7 @@ class extends Component {
             $new_roles = array_diff($this->selected_user_member_data['roles'], getRoleValue($this->guild, 'ic_roles'));
             $new_roles[] = $this->selected_user_role;
 
-            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, $new_roles);
+            $response = changeMemberRole($this->guild->guild_id, $this->selected_user->discord_id, $new_roles);
 
             if ($response->successful()) {
                 $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
@@ -357,7 +357,7 @@ class extends Component {
 
             $this->selected_user_role = $next_role;
 
-            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
+            $response = changeMemberRole($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
 
             if ($response->successful()) {
                 $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
@@ -422,7 +422,7 @@ class extends Component {
 
             $this->selected_user_role = $next_role;
 
-            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
+            $response = changeMemberRole($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
 
             if ($response->successful()) {
                 $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
@@ -492,7 +492,7 @@ class extends Component {
             $new_roles = array_diff($this->selected_user_member_data['roles'], $warn_roles);
             $new_roles[] = $warn_roles[$next_level - 1];
 
-            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
+            $response = changeMemberRole($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
 
             if ($response->successful()) {
                 $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
@@ -543,7 +543,7 @@ class extends Component {
 
             $new_roles = array_diff($this->selected_user_member_data['roles'], $warn_roles);
 
-            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
+            $response = changeMemberRole($this->guild->guild_id, $this->selected_user->discord_id, array_values($new_roles));
 
             if ($response->successful()) {
                 $this->guild->users()->updateExistingPivot($this->selected_user->discord_id, [
@@ -607,7 +607,7 @@ class extends Component {
             }
 
 
-            $response = changeMemberData($this->guild->guild_id, $this->selected_user->discord_id, $new_roles);
+            $response = changeMemberRole($this->guild->guild_id, $this->selected_user->discord_id, $new_roles);
 
             if (!$response->successful()) {
                 $this->toast()->error('Hiba történt', 'Nem sikerült eltávolítani a felhasználót a Discord szerverről.')->send();

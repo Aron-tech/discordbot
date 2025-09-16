@@ -65,7 +65,7 @@ class extends Component {
                 return $role !== getRoleValue($this->guild, RoleTypeEnum::DUTY_ROLE->value);
             });
 
-            $response = changeMemberData($this->guild->guild_id, $duty->user_discord_id, $new_roles);
+            $response = changeMemberRole($this->guild->guild_id, $duty->user_discord_id, $new_roles);
 
             if ($response->successful()) {
                 $this->toast()->success('A felhasználó sikeresen kiléptetve.')->send();

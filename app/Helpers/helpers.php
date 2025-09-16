@@ -45,7 +45,7 @@ if (! function_exists('getMemberData')) {
 }
 
 if (! function_exists('changeMemberRole')) {
-    function changeMemberData(string $guild_id, string $discord_id, array $new_roles)
+    function changeMemberRole(string $guild_id, string $discord_id, array $new_roles)
     {
         $bot_token = config('services.discord.bot_token');
 
