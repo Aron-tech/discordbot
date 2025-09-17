@@ -764,6 +764,14 @@ class extends Component {
             ->toArray();
 
         $rows = $this->guild->users()
+             ->when($this->search, function($query) {
+                $search = "%{$this->search}%";
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', $search)
+                      ->orWhere('discord_id', 'like', $search)
+                      ->orWhere('pivot.ic_name', 'like', $search);
+                });
+            })
             ->withSum(['duties' => function ($query) { $query->where('guild_guild_id', $this->guild->guild_id); }], 'value')
             ->withSum(['dutiesWithTrashed' => function ($query) { $query->where('guild_guild_id', $this->guild->guild_id); }], 'value')
             ->withMax(['dutiesWithTrashed' => function ($query) { $query->where('guild_guild_id', $this->guild->guild_id); }], 'start_time')
