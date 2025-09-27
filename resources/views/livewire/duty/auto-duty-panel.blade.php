@@ -61,10 +61,11 @@ class extends Component {
         $this->min_duty = getSettingValue($this->guild, SettingTypeEnum::MIN_DUTY->value);
     }
 
-    public function runAutoDutyReport()
+    public function runAutoDutyReport(): void
     {
         if(empty($this->selected_users)){
             $this->toast()->warning('Sikertelen művelet!', 'Nincs kijelölve felhasználó.')->send();
+            return;
         }
 
         foreach ($this->selected_users as $user_discord_id) {
@@ -103,6 +104,7 @@ class extends Component {
         $headers = collect($allHeaders)
             ->whereIn('index', $this->visible_columns)
             ->when(!in_array('id', $this->visible_columns), fn($c) => $c->prepend(['index' => 'id', 'label' => 'Discord ID']))
+            ->when(!in_array('action_type', $this->visible_columns), fn($c) => $c->push(['index' => 'action_type', 'label' => 'Akció', 'sortable' => false]))
             ->values()
             ->toArray();
 
@@ -140,7 +142,7 @@ class extends Component {
                     'in_guild_days' => $user->in_guild_days . ' napja',
                     'duties_with_trashed_max_start_time' => $user->duties_with_trashed_max_start_time ? Carbon::parse($user->duties_with_trashed_max_start_time)->diffForHumans() : 'Nincs adat',
                     'action_type' => (function () use ($user) {
-                        $user_rank_up = ($user->duties_with_trashed_sum_value >= ($this->min_rank_up_duty * 60))
+                        $user_rank_up = ($user->duties_sum_value >= ($this->min_rank_up_duty * 60))
                             && Carbon::parse($user->pivot->last_role_time)->addDays($this->min_rank_up_time)->isPast()
                             && (is_null($user->pivot->last_warn_time) || Carbon::parse($user->pivot->last_warn_time)->addDays($this->next_checking_time)->isPast());
 
@@ -153,6 +155,7 @@ class extends Component {
                         }
 
                         if ($user_rank_up) {
+                            dd($user);
                             return 'Felfokozás';
                         }
 
@@ -184,5 +187,5 @@ class extends Component {
             />
         </div>
     </div>
-    <x-table :$headers :$rows striped :$sort filter loading filter paginate selectable wire:model.live="selected_users"/>
+    <x-table :$headers :$rows striped :$sort filter loading :quantity="[10,20,50]" filter paginate selectable wire:model.live="selected_users"/>
 </div>
