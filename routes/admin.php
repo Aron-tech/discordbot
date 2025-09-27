@@ -22,4 +22,6 @@ Route::prefix('admin/')->name('admin.')->group(function () {
     Volt::route('exam/log', 'admin.exam-result')->name('exam-results')->middleware('check.permission:view_exam_result');
 
     Volt::route('blacklist', 'admin.blacklist')->name('blacklist')->middleware('check.permission:view_blacklist');
+
+    Volt::route('auto-duty-report', 'duty.auto-duty-panel')->name('auto-duty-report');
 });

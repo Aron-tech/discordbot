@@ -655,7 +655,7 @@ class extends Component {
         ]);
     }
 
-    public function autoReportDuty(): void
+    public function autoReportDuty()
     {
         if (!$this->ensureFeatureEnabled($this->guild, SettingTypeEnum::CHECK_SYSTEM)) {
             return;
@@ -666,15 +666,7 @@ class extends Component {
             return;
         }
 
-        CheckingDutyAction::run($this->guild, true);
-
-        $this->toast()->success('Sikeres művelet', 'A szolgálati idők ellenőrzése sikeresen megtörtént.')->send();
-
-        $channel_id = $this->getDefaultLogChannelId($this->guild);
-        $this->sendDefaultLog($channel_id, [
-            'message' => "A felhasználó automatikus szolgálati idő ellenőrzést hajtott végre.",
-            'user' => auth()->id(),
-        ]);
+        return to_route('admin.auto-duty-report');
     }
 
     public function openModal($user_discord_id): void

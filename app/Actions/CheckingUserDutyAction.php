@@ -8,48 +8,29 @@ use App\Livewire\Traits\DcMessageTrait;
 use App\Models\Guild;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Lorisleiva\Actions\Concerns\AsAction;
 
-class CheckingDutyAction
+class CheckingUserDutyAction
 {
     use AsAction;
     use DcMessageTrait;
-
-    public function handle(Guild $guild, bool $is_executing = false): Collection
+    public function handle(Guild $guild, $discord_id, array $system_data): void
     {
+        try {
+            DB::beginTransaction();
+            $user = $guild->users()->where('discord_id', $discord_id)->first();
 
-        $next_checking_time = getSettingValue($guild, SettingTypeEnum::NEXT_CHECKING_TIME->value);
-        $min_rank_up_duty = getSettingValue($guild, SettingTypeEnum::MIN_RANK_UP_DUTY->value);
-        $min_rank_up_time = getSettingValue($guild, SettingTypeEnum::MIN_RANK_UP_TIME->value);
-        $min_duty = getSettingValue($guild, SettingTypeEnum::MIN_DUTY->value);
+            $min_duty = $system_data['min_duty'];
+            $min_rank_up_duty = $system_data['min_rank_up_duty'];
+            $next_checking_time = $system_data['next_checking_time'];
+            $min_rank_up_time = $system_data['min_rank_up_time'];
 
-        $users = $guild->users()
-            ->select('users.discord_id', 'users.name')
-            ->withSum('duties as total_duty_time', 'value')
-            ->get();
-
-        foreach ($users as $user) {
-            $user_rank_up = ($user->total_duty_time >= ($min_rank_up_duty * 60) && Carbon::parse($user->pivot->last_role_time)->addDays($min_rank_up_time)->isPast()) && (is_null($user->pivot->last_warn_time) || Carbon::parse($user->pivot->last_warn_time)->addDays($next_checking_time)->isPast());
-            $user_warn = ($user->total_duty_time < ($min_duty * 60)) &&
+            $should_rank_up = ($user->total_duty_time >= ($min_rank_up_duty * 60) && Carbon::parse($user->pivot->last_role_time)->addDays($min_rank_up_time)->isPast()) && (is_null($user->pivot->last_warn_time) || Carbon::parse($user->pivot->last_warn_time)->addDays($next_checking_time)->isPast());
+            $should_warn = ($user->total_duty_time < ($min_duty * 60)) &&
                 (is_null($user->pivot->freedom_expiring) || Carbon::parse($user->pivot->freedom_expiring)->lt(Carbon::now()->subDays($next_checking_time)))
                 && ($user->pivot->created_at->addDays($next_checking_time)->isPast());
 
-            if ($is_executing) {
-                $this->processUserActions($guild, $user, $user_rank_up, $user_warn);
-                $guild->duties()->delete();
-            }
-
-            $user->rank_up = $user_rank_up;
-            $user->warn = $user_warn;
-        }
-
-        return $users;
-    }
-
-    protected function processUserActions(Guild $guild, $user, bool $should_rank_up, bool $should_warn): void
-    {
-        try {
             $current_roles = getMemberData($guild->guild_id, $user->discord_id)['roles'] ?? [];
 
             if ($should_rank_up) {
@@ -60,8 +41,13 @@ class CheckingDutyAction
                 $this->handleWarn($guild, $user, $current_roles);
             }
 
+            $guild->duties()->where('user_discord_id', $user->discord_id)->delete();
+
+            DB::commit();
+
         } catch (Exception $e) {
-            logger()->error("Duty check error for user {$user->discord_id}: ".$e->getMessage());
+            DB::rollBack();
+            logger()->error("Duty check error for user {$user->discord_id}: " . $e->getMessage());
         }
     }
 
@@ -99,12 +85,12 @@ class CheckingDutyAction
             'fields' => [
                 [
                     'name' => '👤 Felhasználó',
-                    'value' => '<@'.$user->discord_id.'>',
+                    'value' => '<@' . $user->discord_id . '>',
                     'inline' => true,
                 ],
                 [
                     'name' => '📊 Figyelmeztetési szint',
-                    'value' => (string) (($next_warn_index + 1).'.'),
+                    'value' => (string)(($next_warn_index + 1) . '.'),
                     'inline' => true,
                 ],
                 [
@@ -119,7 +105,7 @@ class CheckingDutyAction
                 ],
             ],
             'footer' => [
-                'text' => 'Duty Management System • Elküldve: '.now()->locale('hu')->translatedFormat('Y.m.d H:i:s'),
+                'text' => 'Duty Management System • Elküldve: ' . now()->locale('hu')->translatedFormat('Y.m.d H:i:s'),
             ],
         ];
 
