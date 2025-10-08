@@ -53,9 +53,9 @@ class extends Component {
             })->values()->toArray();
 
             $this->user_owner_guilds = collect($user_guilds)->filter(function ($guild) use ($bot_guild_ids) {
-                $has_manage_guild = ($guild['permissions'] & 0x20) === 0x20;
+                $has_manage_guild_or_admin = ($guild['permissions'] & 0x20) === 0x20 || ($guild['permissions'] & 0x8) === 0x8;
 
-                return ($guild['owner'] === true || $has_manage_guild) && !in_array($guild['id'], $bot_guild_ids);
+                return ($guild['owner'] === true || $has_manage_guild_or_admin) && !in_array($guild['id'], $bot_guild_ids);
             })->values()->toArray();
         } else {
             to_route('guild.selector');
